@@ -8,10 +8,11 @@ use gurobi to get the solution of the problem.
 Author: 626
 Created Date: 2023-1109
 '''
+
+
 import sys
 sys.path.append('..')
 from Joint_Optimization_of_Orders_and_Totes_for_WayZim.src.instance.input_data import read_input_data
-
 import gurobipy as gp
 import time
 from gurobipy import GRB
