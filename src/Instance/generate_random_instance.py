@@ -6,10 +6,11 @@ import json
 from src.entity.Order import Order
 from src.entity.Tote import Tote
 from src.entity.Station import Station
+from src.entity.Block import Block
 
 
 class genRandomInstance:
-    def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=5, instance_name='myRandomInstance') -> None:
+    def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=5, block_storage_num=4, instance_name='myRandomInstance') -> None:
         """ init the instance
         Args:
             order_nums (int): the number of the orders.
@@ -24,6 +25,7 @@ class genRandomInstance:
         self.station_nums = station_nums
         self.block_nums = block_nums
         self.station_buffer_num = station_buffer_num
+        self.block_storage_num = block_storage_num
         self.instance_name = instance_name
         self.order_list = []
         self.tote_list = []
@@ -38,9 +40,12 @@ class genRandomInstance:
             sku_nums = random.randint(4, 6)  # sku nums
             sku_list = []  # sku list
             for sku in range(sku_nums):
-                sku_idx = random.randint(0, self.tote_nums - 1)
-                if sku_idx not in sku_list:
-                    sku_list.append(sku_idx)
+                accept = False
+                while not accept:
+                    sku_idx = random.randint(0, self.tote_nums - 1)
+                    if sku_idx not in sku_list:
+                        sku_list.append(sku_idx)
+                        accept = True
             order_obj = Order(idx=order, sku=sku_list)
             self.order_list.append(order_obj)
 
@@ -58,16 +63,19 @@ class genRandomInstance:
 
     def gen_blocks(self):
         """ gen the blocks list """
+        sku_list = []
         for block in range(self.block_nums):
-            # gen the sku of the block
-            sku_nums = random.randint(6, 10)  # sku nums
-            sku_list = []  # sku list
-            for sku in range(sku_nums):
-                sku_idx = random.randint(0, self.tote_nums - 1)
-                if sku_idx not in sku_list:
-                    sku_list.append(sku_idx)
-            order_obj = Order(idx=block, sku=sku_list)
-            self.block_list.append(block)
+            sku_list.append([])
+        for i in range(tote_nums):
+            delete = False
+            while not delete:
+                block = random.randint(0, block_nums - 1)
+                if len(sku_list[block]) < 8:
+                    sku_list[block].append(i)
+                    delete = True
+        for block in range(self.block_nums):
+            block_obj = Block(idx=block, sku=sku_list[block])
+            self.block_list.append(block_obj)
 
     def gen_json(self):
         """ gen the json file of the instance"""
@@ -101,6 +109,7 @@ class genRandomInstance:
         json_dict['station_list'] = station_idx_list
         json_dict['block_list'] = block_idx_list
         json_dict['station_buffer_num'] = self.station_buffer_num
+        json_dict['block_storage_num'] = self.block_storage_num
         json_file_path = self.instance_name + '.json'
         with open(json_file_path, 'w') as f:
             json.dump(json_dict, f, indent=4)

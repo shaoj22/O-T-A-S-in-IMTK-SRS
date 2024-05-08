@@ -1,5 +1,5 @@
 class Instance:
-    def __init__(self, order_list=None, tote_list=None, station_list=None, block_list=None, station_buffer_num=5):
+    def __init__(self, order_list=None, tote_list=None, station_list=None, block_list=None, station_buffer_num=5, block_storage_num=4):
         self.order_list = order_list  # 订单列表
         self.tote_list = tote_list  # 料箱列表
         self.station_list = station_list  # 工作站列表
@@ -9,6 +9,7 @@ class Instance:
         self.station_num = len(self.station_list)  # 工作站数量
         self.block_num = len(self.block_list)  # 货架数量
         self.station_buffer_num = station_buffer_num  # 工作站订单缓存数量
+        self.block_storage_num = block_storage_num  # block暂存区缓存料箱数量
         self.to_matrix_oi = self.gen_tote_and_order_matrix()
         self.to_matrix_ib = self.gen_tote_and_block_matrix()
 
