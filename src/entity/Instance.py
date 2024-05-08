@@ -15,7 +15,7 @@ class Instance:
 
     def gen_tote_and_order_matrix(self):
         """ generate the tote and order's matrix """
-        to_matrix = [[0 for j in range(self.tote_num) for i in range(self.order_num)]]
+        to_matrix = [[0 for j in range(self.tote_num)] for i in range(self.order_num)]
         for order in self.order_list:
             for sku in order['sku']:
                 to_matrix[order['orderIdx']][sku] = 1
