@@ -121,4 +121,28 @@ class IntegratedGurobi:
         # 约束3：同一时刻，料箱中最多有一种动作
         Model.addConstrs(gp.quicksum(x_itb_1[i, t, b] for b in range(self.B)) + x_it_2[i, t] + x_it_3[i, t] + gp.quicksum(x_itb_4[i, t, b] for b in range(self.B)) <= 1 for i in range(self.I) for t in range(self.T))
 
+        Model.update()
+        result_info = {
+            'x_op': x_op,
+            'x_itb_1': x_itb_1,
+            'x_it_2': x_it_2,
+            'x_itp_2': x_itp_2,
+            'x_it_3': x_it_3,
+            'x_itb_4': x_itb_4,
+            'y_it_2': y_it_2,
+            'y_itb_2': y_itb_2,
+            'y_it_3': y_it_3,
+            'y_it_4': y_it_4,
+            'z_oit_p': z_oit_p,
+            'z_ot_p': z_ot_p,
+        }
+        return result_info
 
+    def run_gurobi_model(self):
+        Model = gp.Model('IntegratedGurobiModel')
+        self.build_gurobi_model(Model=Model)
+        if self.time_limit is not None:
+            Model.setParam('TimeLimit', self.time_limit)
+        start_Time = time.time()
+        Model.optimize()
+        end_Time = time.time()
