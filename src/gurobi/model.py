@@ -87,9 +87,9 @@ class IntegratedGurobi:
         # 约束1：每个时刻下，每个Block中只能下架一个料箱
         Model.addConstrs(gp.quicksum(x_itb_1[i, t, b] for i in range(self.I)) <= 1 for t in range(self.T) for b in range(self.B))
         # 约束2：当料箱在架上时才能下架，下架后在暂存区（回库以后也在存储区）
-        Model.addConstrs(y_it_4[i, t+1] + y_it_2[i, t+2] >= y_it_4[i, t] + gp.quicksum(x_itb_4[i, t, b] for b in range(self.B)) for i in range(self.I) for t in range(self.T))
+        Model.addConstrs(y_it_4[i, t+1] + y_it_2[i, t+2] >= y_it_4[i, t] + gp.quicksum(x_itb_4[i, t, b] for b in range(self.B)) for i in range(self.I) for t in range(self.T - 2))
         Model.addConstrs(x_itb_1[i, t, b] <= y_it_4[i, t] for i in range(self.I) for t in range(self.T) for b in range(self.B))
-        Model.addConstrs(y_it_2[i, t+1] + y_it_3[i, t+2] + y_it_4[i, t+2] >= y_it_2[i, t] + gp.quicksum(x_itb_1[i, t, b] for b in range(self.B)) + x_it_3[i, t] for i in range(self.I) for t in range(self.T))
+        Model.addConstrs(y_it_2[i, t+1] + y_it_3[i, t+2] + y_it_4[i, t+2] >= y_it_2[i, t] + gp.quicksum(x_itb_1[i, t, b] for b in range(self.B)) + x_it_3[i, t] for i in range(self.I) for t in range(self.T - 2))
         # 约束3：料箱在Block b中才能下架
         Model.addConstrs(x_itb_1[i, t, b] <= self.to_matrix_ib[i][b] for i in range(self.I) for t in range(self.T) for b in range(self.B))
         # 出库决策有关约束：
@@ -100,10 +100,10 @@ class IntegratedGurobi:
         # 约束3：料箱在暂存区时才能出库
         Model.addConstrs(x_it_2[i, t] <= y_it_2[i, t] for i in range(self.I) for t in range(self.T))
         # 约束4：料箱出库后，料箱在拣选站
-        Model.addConstrs(y_it_3[i, t+1] + y_it_2[i, t+2] >= y_it_3[i, t] + x_it_2[i, t] for i in range(self.I) for t in range(self.T))
+        Model.addConstrs(y_it_3[i, t+1] + y_it_2[i, t+2] >= y_it_3[i, t] + x_it_2[i, t] for i in range(self.I) for t in range(self.T - 2))
         # 入库决策有关约束
         # 约束1：入库的顺序时刻为出库顺序时刻+访问的拣选站的数量
-        Model.addConstrs(gp.abs_(t2 - t1) - gp.quicksum(x_itp_2[i, t1, p] for p in range(self.P)) >= self.bigM * (x_it_3[i, t2] + x_it_2[i, t1] - 2) for i in range(self.I) for t1 in range(self.T) for t2 in range(self.T))
+        Model.addConstrs(t2 - t1 - gp.quicksum(x_itp_2[i, t1, p] for p in range(self.P)) >= self.bigM * (x_it_3[i, t2] + x_it_2[i, t1] - 2) for i in range(self.I) for t1 in range(self.T) for t2 in range(t1, self.T))
         # 上架决策有关约束
         # 约束1：是否上架
         Model.addConstrs(x_itb_4[i, t, b] <= y_it_2[i, t] for i in range(self.I) for t in range(self.T) for b in range(self.B))
@@ -121,6 +121,7 @@ class IntegratedGurobi:
         # 约束3：同一时刻，料箱中最多有一种动作
         Model.addConstrs(gp.quicksum(x_itb_1[i, t, b] for b in range(self.B)) + x_it_2[i, t] + x_it_3[i, t] + gp.quicksum(x_itb_4[i, t, b] for b in range(self.B)) <= 1 for i in range(self.I) for t in range(self.T))
 
+        # Model.optimize()
         Model.update()
         result_info = {
             'x_op': x_op,
@@ -146,3 +147,218 @@ class IntegratedGurobi:
         start_Time = time.time()
         Model.optimize()
         end_Time = time.time()
+        # get the variable's value
+        result_info = {}
+        # get x
+
+        # x_op
+        info_x_op = []
+        info_xop = []
+        for o in range(self.O):
+            x_o = []
+            for p in range(self.P):
+                var_name_x = f"x_op[{o},{p}]"
+                x_o_p = Model.getVarByName(var_name_x).X
+                if x_o_p > 0:
+                    info_xop.append([o, p])
+                x_o.append(x_o_p)
+            info_x_op.append(x_o)
+        # result_info['info_x_op'] = info_x_op
+        result_info['info_xop'] = info_xop
+        # x_itb_1
+        info_x_itb_1 = []
+        info_xitb1= []
+        for i in range(self.I):
+            x_i = []
+            for t in range(self.T):
+                x_i_t = []
+                for b in range(self.B):
+                    var_name_x = f"x_itb_1[{i},{t},{b}]"
+                    x_i_t_b_1 = Model.getVarByName(var_name_x).X
+                    if x_i_t_b_1 > 0:
+                        info_xitb1.append([i, t, b])
+                    x_i_t.append(x_i_t_b_1)
+                x_i.append(x_i_t)
+            info_x_itb_1.append(x_i)
+        # result_info['info_x_itb_1'] = info_x_itb_1
+        result_info['info_xitb1'] = info_xitb1
+        # x_it_2
+        info_x_it_2 = []
+        info_xit2 = []
+        for i in range(self.I):
+            x_i = []
+            for t in range(self.T):
+                var_name_x = f"x_it_2[{i},{t}]"
+                x_i_t_2 = Model.getVarByName(var_name_x).X
+                if x_i_t_2 > 0:
+                    info_x_it_2.append([i, t])
+                x_i.append(x_i_t_2)
+            info_x_it_2.append(x_i)
+        # result_info['info_x_it_2'] = info_x_it_2
+        result_info['info_xit2'] = info_xit2
+        # x_itp_2
+        info_x_itp_2 = []
+        info_xitp2 = []
+        for i in range(self.I):
+            x_i = []
+            for t in range(self.T):
+                x_i_t = []
+                for p in range(self.P):
+                    var_name_x = f"x_itp_2[{i},{t},{p}]"
+                    x_i_t_p_2 = Model.getVarByName(var_name_x).X
+                    if x_i_t_p_2 > 0:
+                        info_xitp2.append([i, t, p])
+                    x_i_t.append(x_i_t_p_2)
+                x_i.append(x_i_t)
+            info_x_itp_2.append(x_i)
+        # result_info['info_x_itp_2'] = info_x_itp_2
+        result_info['info_xitp2'] = info_xitp2
+        # x_it_3
+        info_x_it_3 = []
+        info_xit3 = []
+        for i in range(self.I):
+            x_i = []
+            for t in range(self.T):
+                var_name_x = f"x_it_3[{i},{t}]"
+                x_i_t_3 = Model.getVarByName(var_name_x).X
+                if x_i_t_3 > 0:
+                    info_xit3.append(x_i_t_3)
+                x_i.append(x_i_t_3)
+            info_x_it_3.append(x_i)
+        # result_info['info_x_it_3'] = info_x_it_3
+        result_info['info_xit3'] = info_xit3
+        # x_itb_4
+        info_x_itb_4 = []
+        info_xitb4 = []
+        for i in range(self.I):
+            x_i = []
+            for t in range(self.T):
+                x_i_t = []
+                for b in range(self.B):
+                    var_name_x = f"x_itb_4[{i},{t},{b}]"
+                    x_i_t_b_4 = Model.getVarByName(var_name_x).X
+                    if x_i_t_b_4 > 0:
+                        info_xitb4.append([1, t, b])
+                    x_i_t.append(x_i_t_b_4)
+                x_i.append(x_i_t)
+            info_x_itb_4.append(x_i)
+        # result_info['info_x_itb_4'] = info_x_itb_4
+        result_info['info_xitb4'] = info_xitb4
+        # y_it_2
+        info_y_it_2 = []
+        info_yit2 = []
+        for i in range(self.I):
+            y_i = []
+            for t in range(self.T):
+                var_name_y = f"y_it_2[{i},{t}]"
+                y_i_t_2 = Model.getVarByName(var_name_y).X
+                if y_i_t_2 > 0:
+                    info_yit2.append([i, t])
+                y_i.append(y_i_t_2)
+            info_y_it_2.append(y_i)
+        # result_info['info_y_it_2'] = info_y_it_2
+        result_info['info_yit2'] = info_yit2
+        # y_itb_2
+        info_y_itb_2 = []
+        info_yitb2 = []
+        for i in range(self.I):
+            y_i = []
+            for t in range(self.T):
+                y_i_t = []
+                for b in range(self.B):
+                    var_name_y = f"y_itb_2[{i},{t},{b}]"
+                    y_i_t_b_2 = Model.getVarByName(var_name_y).X
+                    if y_i_t_b_2 > 0:
+                        info_yitb2.append([i, t, b])
+                    y_i_t.append(y_i_t_b_2)
+                y_i.append(y_i_t)
+            info_y_itb_2.append(y_i)
+        # result_info['info_y_itb_2'] = info_y_itb_2
+        result_info['info_yitb2'] = info_yitb2
+        # y_it_3
+        info_y_it_3 = []
+        info_yit3 = []
+        for i in range(self.I):
+            y_i = []
+            for t in range(self.T):
+                var_name_y = f"y_it_3[{i},{t}]"
+                y_i_t_3 = Model.getVarByName(var_name_y).X
+                if y_i_t_3 > 0:
+                    info_yit3.append([i, t])
+                y_i.append(y_i_t_3)
+            info_y_it_3.append(y_i)
+        # result_info['info_y_it_3'] = info_y_it_3
+        result_info['info_yit3'] = info_yit3
+        # y_it_4
+        info_y_it_4 = []
+        info_yit4 = []
+        for i in range(self.I):
+            y_i = []
+            for t in range(self.T):
+                var_name_y = f"y_it_4[{i},{t}]"
+                y_i_t_4 = Model.getVarByName(var_name_y).X
+                if y_i_t_4 > 0:
+                    info_yit4.append([i, t])
+                y_i.append(y_i_t_4)
+            info_y_it_4.append(y_i)
+        # result_info['info_y_it_4'] = info_y_it_4
+        result_info['info_yit4'] = info_yit4
+        # z_oit_p
+        info_z_oit_p = []
+        info_zoitp = []
+        for o in range(self.O):
+            z_o = []
+            for i in range(self.I):
+                z_o_i = []
+                for t in range(self.T):
+                    z_o_i_t = []
+                    for p in range(self.P):
+                        var_name_z = f"z_oit_p[{o},{i},{t},{p}]"
+                        z_o_i_t_p = Model.getVarByName(var_name_z).X
+                        if z_o_i_t_p > 0:
+                            info_zoitp.append([o, i, t, p])
+                        z_o_i_t.append(z_o_i_t_p)
+                    z_o_i.append(z_o_i_t)
+                z_o.append(z_o_i)
+            info_z_oit_p.append(z_o)
+        # result_info['info_z_oit_p'] = info_z_oit_p
+        result_info['info_zoitp'] = info_zoitp
+        # z_ot_p
+        info_z_ot_p = []
+        info_zotp = []
+        for o in range(self.O):
+            z_o = []
+            for t in range(self.T):
+                z_o_t = []
+                for p in range(self.P):
+                    var_name_z = f"z_ot_p[{o},{t},{p}]"
+                    z_o_t_p = Model.getVarByName(var_name_z).X
+                    if z_o_t_p > 0:
+                        info_zotp.append([o, t, p])
+                    z_o_t.append(z_o_t_p)
+                z_o.append(z_o_t)
+            info_z_ot_p.append(z_o)
+        # result_info['info_z_ot_p'] = info_z_ot_p
+        result_info['info_zotp'] = info_zotp
+
+
+        upper_bound = Model.ObjVal
+        lower_bound = Model.ObjBound
+        MIPGap = Model.MIPGap
+        CPU_Time = end_Time - start_Time
+        result_info['upper_bound'] = upper_bound
+        result_info['lower_bound'] = lower_bound
+        result_info['MIPGap'] = MIPGap
+        result_info['CPU_time'] = CPU_Time
+
+        return result_info
+
+if __name__ == "__main__":
+    input_path = r"/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    instance_obj = read_input_data(input_path)
+    gurobi_alg = IntegratedGurobi(instance=instance_obj, time_limit=3600, max_T=20)
+    # Model = gp.Model('IntegratedGurobiModel')
+    # result_info = gurobi_alg.build_gurobi_model(Model=Model)
+    result_info = gurobi_alg.run_gurobi_model()
+
+    print(result_info)
