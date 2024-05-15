@@ -1,5 +1,6 @@
 from collections import defaultdict
 from collections import Counter
+from src.utils.evaluator import evaluate_process
 from src.Instance.input_data import read_input_data
 input_path= "/Users/macbookpro/PycharmProjects/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
 instance_obj = read_input_data(input_path)
@@ -60,7 +61,9 @@ def process_orders(order_list):
                 block_idx = block['blockIdx']
                 block_result[block_idx].append(sku)
                 break
-
+        for i in range(len(tote_list)):
+            if tote_status[i] != 0:
+                tote_status[i] = 0  # 更新状态为0，即强制上架
     return cache_out_order, block_result
 def process_order_group(orders):
     global station_buffer, temporary_storage, block_storage, tote_status, block_order, cache_out_order, skipped_orders
@@ -77,20 +80,21 @@ def process_order_group(orders):
     sorted_sku_list = [sku for sku, _ in sorted_skus]
 
     for sku in sorted_sku_list:
-            if tote_status[sku] == 0:  # 确保料箱在架上
-                station_buffer.append(sku)
-                tote_status[sku] = 2  # 更新状态为在缓存池中
+        if tote_status[sku] == 0:  # 确保料箱在架上
+            tote_status[sku] = 1
+            station_buffer.append(sku)
+            tote_status[sku] = 2  # 更新状态为在缓存池中
     while station_buffer:
         sku = station_buffer.pop(0)  # 从缓存池的前端弹出
         cache_out_order.append(sku)
-
+        tote_status[sku] = 1
         if sku in block_storage:
             blockIdx = next(idx for idx, block in block_storage.items() if sku in block_storage[idx])
             block_storage[blockIdx].append(sku)
             if not block_storage[blockIdx]:
                 del block_storage[blockIdx]
 
-        tote_status[sku] = 0  # 更新状态为在架上
+        tote_status[sku] =0 # 更新状态为在架上
     for order in orders:
         order_idx = order['orderIdx']
         #can_process_order = True
@@ -101,8 +105,9 @@ def process_order_group(orders):
                 print(f"订单 {order_idx} 中的料箱 {sku} 不在架上，跳过此料箱。")
                 can_process_order = False
             elif tote_status[sku] == 0:
+                tote_status[sku] = 1
                 can_process_order = True
-                station_buffer.append(sku)# 将料箱移动到缓存池
+                station_buffer.append(sku)  # 将料箱移动到缓存池
                 tote_status[sku] = 2  # 更新状态为在缓存池中
         if can_process_order:
             print(f"处理订单 {order_idx}中的料箱")
@@ -175,6 +180,16 @@ skipped_orders = []
 # 调用主函数
 cache_out_result, block_result = process_orders(order_list)
 print("缓存池出料顺序:", cache_out_result)
+
 print("Block 出料顺序:")
 for idx, block_order_list in enumerate(block_result):
     print(f"Block {idx} 下架顺序:", block_order_list)
+# 确保所有料箱的状态都回到了0
+assert all(status == 0 for status in tote_status), "所有料箱应最终在架上"
+# 调用评估函数
+unstack, checkout, restock, stack = evaluate_process(tote_status, cache_out_order)
+
+print(f"下架次数: {unstack}")
+print(f"出库次数: {checkout}")
+print(f"入库次数: {restock}")
+print(f"上架次数: {stack}")
