@@ -33,3 +33,20 @@ def evaluate_process(tote_status, cache_out_order):
             current_status[i] = 0
 
     return num_unstack, num_checkout, num_restock, num_stack
+
+# 请注意，您需要根据实际的tote_status和cache_out_order数据来调用此函数。
+
+
+
+# 示例：使用提供的程序输出的tote_status和cache_out_order进行评估
+# 假设tote_status和cache_out_order是从程序中获取的
+#tote_status_example = [0, 1, 2, 0, 1]  # 示例状态列表
+#cache_out_order_example = [0, 2, 1, 0, 2]  # 示例出料顺序列表
+
+# 调用评估函数
+#unstack, checkout, restock, stack = evaluate_process(tote_status, cache_out_order)
+
+#print(f"下架次数: {unstack}")
+#print(f"出库次数: {checkout}")
+#print(f"入库次数: {restock}")
+#print(f"上架次数: {stack}")
