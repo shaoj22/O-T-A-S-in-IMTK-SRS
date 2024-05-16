@@ -16,7 +16,9 @@ class IntegratedGurobi:
         self.to_matrix_oi = self.instance.to_matrix_oi
         self.to_matrix_ib = self.instance.to_matrix_ib
         self.C = self.instance.station_buffer_num # 拣选站同时处理订单最大数
+        # self.C = 1 # 拣选站同时处理订单最大数
         self.K = self.instance.block_storage_num# 暂存区的最大储位
+        # self.K = 1# 暂存区的最大储位
         self.T = max_T # max t set
         self.sita = sita
         self.bigM = 100 # big M
@@ -375,7 +377,7 @@ class IntegratedGurobi:
 if __name__ == "__main__":
     input_path = r"/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
     instance_obj = read_input_data(input_path)
-    gurobi_alg = IntegratedGurobi(instance=instance_obj, time_limit=3600, max_T=6)
+    gurobi_alg = IntegratedGurobi(instance=instance_obj, time_limit=3600, max_T=20)
     # Model = gp.Model('IntegratedGurobiModel')
     # result_info = gurobi_alg.build_gurobi_model(Model=Model)
     result_info = gurobi_alg.run_gurobi_model()
