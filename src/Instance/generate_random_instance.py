@@ -1,6 +1,10 @@
 import sys
 
+<<<<<<< HEAD
 sys.path.append('../../../..')
+=======
+sys.path.append('..')
+>>>>>>> f2fa453c1cd9227e2431a9a49fc79f776f26b991
 import random
 import json
 from src.entity.Order import Order
@@ -10,7 +14,11 @@ from src.entity.Block import Block
 
 
 class genRandomInstance:
+<<<<<<< HEAD
     def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=5, block_storage_num=4, instance_name='myRandomInstance') -> None:
+=======
+    def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=2, block_storage_num=2, instance_name='myRandomInstance') -> None:
+>>>>>>> f2fa453c1cd9227e2431a9a49fc79f776f26b991
         """ init the instance
         Args:
             order_nums (int): the number of the orders.
@@ -37,7 +45,11 @@ class genRandomInstance:
         """ gen the orders list """
         for order in range(self.order_nums):
             # gen the sku of the order
+<<<<<<< HEAD
             sku_nums = random.randint(4, 6)  # sku nums
+=======
+            sku_nums = random.randint(2, 3)  # sku nums
+>>>>>>> f2fa453c1cd9227e2431a9a49fc79f776f26b991
             sku_list = []  # sku list
             for sku in range(sku_nums):
                 accept = False
@@ -117,10 +129,17 @@ class genRandomInstance:
 
 
 if "__main__" == __name__:
+<<<<<<< HEAD
     order_nums = 30
     tote_nums = 30
     station_nums = 5
     block_nums = 4
+=======
+    order_nums = 4
+    tote_nums = 8
+    station_nums = 1
+    block_nums = 1
+>>>>>>> f2fa453c1cd9227e2431a9a49fc79f776f26b991
     random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums,
                                         instance_name='myRandomInstanceGurobi')
     print("order_list:", random_instance.json_dict['order_list'])

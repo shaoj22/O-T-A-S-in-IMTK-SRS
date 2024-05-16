@@ -7,7 +7,11 @@ use gurobi to get the solution of the problem.
 -----------
 Author: 626
 Created Date: 2023-1109
+<<<<<<< HEAD
 hhhhh
+=======
+hhhh
+>>>>>>> f2fa453c1cd9227e2431a9a49fc79f776f26b991
 '''
 
 

@@ -1,5 +1,9 @@
 import sys
+<<<<<<< HEAD
 sys.path.append('../../../../')
+=======
+sys.path.append('../')
+>>>>>>> f2fa453c1cd9227e2431a9a49fc79f776f26b991
 import json
 from src.entity.Instance import Instance
 
