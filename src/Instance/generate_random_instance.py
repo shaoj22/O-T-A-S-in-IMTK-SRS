@@ -10,7 +10,7 @@ from src.entity.Block import Block
 
 
 class genRandomInstance:
-    def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=2, block_storage_num=2, instance_name='myRandomInstance') -> None:
+    def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=0, block_storage_num=0, instance_name='myRandomInstance') -> None:
         """ init the instance
         Args:
             order_nums (int): the number of the orders.
@@ -70,7 +70,7 @@ class genRandomInstance:
             delete = False
             while not delete:
                 block = random.randint(0, block_nums - 1)
-                if len(sku_list[block]) < 8:
+                if len(sku_list[block]) < 4:
                     sku_list[block].append(i)
                     delete = True
         for block in range(self.block_nums):
@@ -117,11 +117,13 @@ class genRandomInstance:
 
 
 if "__main__" == __name__:
-    order_nums = 4
+    order_nums = 10
     tote_nums = 8
-    station_nums = 1
-    block_nums = 1
-    random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums,
+    station_nums = 3
+    block_nums = 2
+    station_buffer_num = 2
+    block_storage_num = 4
+    random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums, station_buffer_num=station_buffer_num, block_storage_num=block_storage_num,
                                         instance_name='myRandomInstanceGurobi')
     print("order_list:", random_instance.json_dict['order_list'])
     print("tote_list:", random_instance.json_dict['tote_list'])
