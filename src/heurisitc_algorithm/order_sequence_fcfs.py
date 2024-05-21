@@ -44,8 +44,8 @@ for station in station_list:
 def process_orders(order_list):
     global station_buffer, temporary_storage, block_storage, tote_status, block_order, cache_out_order, skipped_orders
 
-    for i in range(0, len(order_list), 5):
-        future_orders = order_list[i:i+5]
+    for i in range(0, len(order_list), num_stations ):
+        future_orders = order_list[i:i+num_stations ]
         process_order_group(future_orders)
 
     # 处理完所有订单后，继续处理被跳过的订单
