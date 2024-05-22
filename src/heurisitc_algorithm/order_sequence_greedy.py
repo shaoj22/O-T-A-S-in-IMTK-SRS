@@ -68,11 +68,12 @@ def delete_order(order_list1, order_list2):
 
 def order_devide():
     global station_buffer_num, order_list, station_matrix, station_list
-    if len(order_list) == 0:
-        return None
+
     for station in station_list:
         while len(station_matrix[station]) < station_buffer_num:
             # x = len(station_matrix[station])
+            if len(order_list) == 0:
+                return None
             sku_combine = combline_order_sku(station_matrix[station])
             sim = -1
             for order in order_list:

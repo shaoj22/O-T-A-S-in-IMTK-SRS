@@ -5,11 +5,11 @@ from itertools import groupby
 
 def order_devide():
     global station_buffer_num, order_list, station_matrix, station_list
-    if len(order_list) == 0:
-        return None
 
     for station in station_list:
         while len(station_matrix[station]) < station_buffer_num:
+            if len(order_list) == 0:
+                return None
             # x = len(station_matrix[station])
             station_matrix[station].append(order_list.pop(0))
     # 输出拣选站矩阵
