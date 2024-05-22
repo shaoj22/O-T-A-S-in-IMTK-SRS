@@ -1,9 +1,10 @@
 from collections import defaultdict
 from src.Instance.input_data import read_input_data
+from itertools import groupby
 
 
 def order_devide():
-    global station_buffer_num, order_list, station_matrix
+    global station_buffer_num, order_list, station_matrix, station_list
     if len(order_list) == 0:
         return None
 
@@ -105,11 +106,14 @@ if __name__ == "__main__":
 
 
     # 调用主函数，得到料箱出库顺序
-    final_sku_list = []
+    or_final_sku_list = []
     while len(un_order_list) != 0:
         sku_list = process_orders()
         for sku in sku_list:
-            final_sku_list.append(sku)
+            or_final_sku_list.append(sku)
+
+    final_sku_list = [sku for sku, _ in groupby(or_final_sku_list)]
+
 
     # 倒退顺序
     block_result = [[] for _ in range(len(block_list))]  # 每个 Block 的下架顺序列表
@@ -124,6 +128,7 @@ if __name__ == "__main__":
             # 出库
             tote_status[sku] = 2  # 拣选站
             # 入库
+            # block_storage[block_idx].append(sku)
             tote_status[sku] = 1  # 暂存区
             un_storage_num = block_storage_num - len(block_storage[block_idx])
             len_un = len(final_sku_list) - i - 1
@@ -134,19 +139,25 @@ if __name__ == "__main__":
                     break
                 if b == min_un - 1:
                     block_back[block_idx].append(sku) # 上架
+                    # block_storage[block_idx].remove(sku)
                     tote_status[sku] = 0  # 说明料箱在架上
         else:
             # 料箱在暂存区 直接出库
+            block_storage[block_idx].remove(sku)
             tote_status[sku] = 2  # 拣选站
             # 入库
             tote_status[sku] = 1  # 暂存区
+            # block_storage[block_idx].append(sku)
             un_storage_num = block_storage_num - len(block_storage[block_idx])
-            for b in range(un_storage_num):
+            len_un = len(final_sku_list) - i - 1
+            min_un = min(un_storage_num, len_un)
+            for b in range(min_un):
                 if final_sku_list[i + b + 1] == sku:
                     block_storage[block_idx].append(sku)  # 暂存
                     break
                 if b == un_storage_num - 1:
                     block_back[block_idx].append(sku)  # 上架
+                    # block_storage[block_idx].remove(sku)
                     tote_status[sku] = 0  # 说明料箱在架上
     # 强制上架
     for sku in final_sku_list:

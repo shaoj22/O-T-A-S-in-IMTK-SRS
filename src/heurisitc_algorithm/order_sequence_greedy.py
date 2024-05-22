@@ -67,13 +67,22 @@ def delete_order(order_list1, order_list2):
     return order_list1
 
 def order_devide():
-    global station_buffer_num, order_list, station_matrix
+    global station_buffer_num, order_list, station_matrix, station_list
     if len(order_list) == 0:
         return None
     for station in station_list:
         while len(station_matrix[station]) < station_buffer_num:
             # x = len(station_matrix[station])
-            station_matrix[station].append(order_list.pop(0))
+            sku_combine = combline_order_sku(station_matrix[station])
+            sim = -1
+            for order in order_list:
+                simlarity = similarity_calculate(order['sku'], sku_combine)
+                if simlarity > sim:
+                    sim = simlarity
+                    order_choose = order
+            station_matrix[station].append(order)
+            order_list.remove(order)
+            # station_matrix[station].append(order_list.pop(0))
     # 输出拣选站矩阵
     for station in station_list:
         orders_in_station = station_matrix[station]
@@ -81,22 +90,34 @@ def order_devide():
     return None
 
 
+def sku_sevice(sorted_sku_list):
+    global final_sku_list
+    for sku_process in sorted_sku_list:
+        if len(final_sku_list) == 0:
+            final_sku_list.append(sku_process)
+        else:
+            if sku_process != final_sku_list[-1]:
+                final_sku_list.append(sku_process)
+        for i, station in enumerate(station_matrix):
+            for order in station:
+                for sku in order['sku']:
+                    if sku == sku_process:
+                        order['sku'].remove(sku)
+                if len(order['sku']) == 0:
+                    station_matrix[i].remove(order)
+                    un_order_list.remove(order)
+                    return None
+
+
 def process_orders():
     global station_buffer_num, order_list, station_matrix, un_order_list
 
-    # 优先考虑最小批时的订单
     process_order = []
-    batch = 10000
     for station in station_matrix:
-        for order in station_matrix[station]:
-            if order['orderIdx'] // station_buffer_num < batch:
-                batch = order['orderIdx'] // station_buffer_num
-    for station in station_matrix:
-        for order in station_matrix[station]:
-            if order['orderIdx'] // station_buffer_num == batch:
-                process_order.append(order)
+        for order in station:
+            process_order.append(order)
 
-    # 最小批时的订单需要的sku_list
+    # 处理订单需要的sku_list
     # 统计每个商品编号的出现次数和所属订单编号
     sku_count = defaultdict(list)
     for order in process_order:
@@ -109,19 +130,13 @@ def process_orders():
     # 提取排序后的商品编号
     sorted_sku_list = [sku for sku, _ in sorted_skus]
 
-    for sku_process in sorted_sku_list:
-        for station in station_matrix:
-            for order in station_matrix[station]:
-                for sku in order['sku']:
-                    if sku == sku_process:
-                        order['sku'].remove(sku)
-                if len(order['sku']) == 0:
-                    station_matrix[station].remove(order)
-                    un_order_list.remove(order)
-        # 来一个料箱就需判断是否有订单已完成
-        order_devide()
+    # 料箱到达
+    sku_sevice(sorted_sku_list)
 
-    return sorted_sku_list
+    # 有订单已完成需添加订单
+    order_devide()
+
+    return None
 
 def belong_block(sku):
     global block_list
@@ -154,8 +169,8 @@ if __name__ == "__main__":
     cache_out_order = []
     skipped_orders = []
 
-    # 初始化拣选站矩阵，用字典表示，键是拣选站编号，值是订单列表
-    station_matrix = {station: [] for station in station_list}
+    # # 初始化拣选站矩阵，用字典表示，键是拣选站编号，值是订单列表
+    # station_matrix = {station: [] for station in station_list}
 
     # 初始相似度最高的订单
     Initial_orders = similarity_matrix_calculate()
@@ -164,9 +179,9 @@ if __name__ == "__main__":
     cur_order_list = delete_order(order_list, Initial_orders)
 
     # 迭代进入拣选站
-    round_list = [Initial_orders]
+    station_matrix = [Initial_orders]
     for i in range(num_stations):
-        round = round_list[i]
+        round = station_matrix[i]
         while len(round) < station_buffer_num:
             round_sku_list = combline_order_sku(round)  # 合并波次里订单的sku
 
@@ -189,16 +204,14 @@ if __name__ == "__main__":
                     continue
         if i < num_stations - 1:
             cur_initial_round = similarity_matrix_calculate()  # 构建下一个拣选站的初始两个订单
-            round_list.append(cur_initial_round)  # 在波次列表中添加新波次
+            station_matrix.append(cur_initial_round)  # 在波次列表中添加新波次
             order_list = delete_order(order_list, cur_initial_round)  # 在剩余订单中删除新波次的初始订单
 
 
     # 调用主函数，得到料箱出库顺序
     final_sku_list = []
     while len(un_order_list) != 0:
-        sku_list = process_orders()
-        for sku in sku_list:
-            final_sku_list.append(sku)
+        process_orders()
 
     # 倒退顺序
     block_result = [[] for _ in range(len(block_list))]  # 每个 Block 的下架顺序列表
@@ -213,29 +226,36 @@ if __name__ == "__main__":
             # 出库
             tote_status[sku] = 2  # 拣选站
             # 入库
+            # block_storage[block_idx].append(sku)
             tote_status[sku] = 1  # 暂存区
             un_storage_num = block_storage_num - len(block_storage[block_idx])
             len_un = len(final_sku_list) - i - 1
             min_un = min(un_storage_num, len_un)
             for b in range(min_un):
-                if final_sku_list[i+b+1] == sku:
+                if final_sku_list[i + b + 1] == sku:
                     block_storage[block_idx].append(sku) # 暂存
                     break
                 if b == min_un - 1:
-                    block_back[block_idx].append(sku) # 上架
+                    block_back[block_idx].append(sku)  # 上架
+                    # block_storage[block_idx].remove(sku)
                     tote_status[sku] = 0  # 说明料箱在架上
         else:
             # 料箱在暂存区 直接出库
+            block_storage[block_idx].remove(sku)
             tote_status[sku] = 2  # 拣选站
             # 入库
             tote_status[sku] = 1  # 暂存区
+            # block_storage[block_idx].append(sku)
             un_storage_num = block_storage_num - len(block_storage[block_idx])
-            for b in range(un_storage_num):
+            len_un = len(final_sku_list) - i - 1
+            min_un = min(un_storage_num, len_un)
+            for b in range(min_un):
                 if final_sku_list[i + b + 1] == sku:
                     block_storage[block_idx].append(sku)  # 暂存
                     break
                 if b == un_storage_num - 1:
                     block_back[block_idx].append(sku)  # 上架
+                    # block_storage[block_idx].remove(sku)
                     tote_status[sku] = 0  # 说明料箱在架上
     # 强制上架
     for sku in final_sku_list:
