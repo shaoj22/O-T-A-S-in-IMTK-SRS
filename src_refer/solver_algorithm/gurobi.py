@@ -146,7 +146,7 @@ class IntegratedGurobi:
         return result_info
 
 if __name__ == "__main__":
-    input_path = "D:\\Desktop\\python_code\\Joint_Optimization_of_Orders_and_Totes_for_WayZim\\src\\instance\\myRandomInstanceGurobi2.json"
+    input_path = "D:\\Desktop\\python_code\\Joint_Optimization_of_Orders_and_Totes_for_WayZim\\src\\instance\\myRandomInstanceGurobi.json"
     instance_obj = read_input_data(input_path)
     gurobi_alg = IntegratedGurobi(instance=instance_obj, time_limit=3600, max_T=10)
     result_info = gurobi_alg.run_gurobi_model()

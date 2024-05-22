@@ -27,11 +27,11 @@ def process_orders():
     batch = 10000
     for station in station_matrix:
         for order in station_matrix[station]:
-            if order['orderIdx'] // station_buffer_num < batch:
-                batch = order['orderIdx'] // station_buffer_num
+            if order['orderIdx'] // (station_buffer_num * num_stations) < batch:
+                batch = order['orderIdx'] // (station_buffer_num * num_stations)
     for station in station_matrix:
         for order in station_matrix[station]:
-            if order['orderIdx'] // station_buffer_num == batch:
+            if order['orderIdx'] // (station_buffer_num * num_stations) == batch:
                 process_order.append(order)
 
     # 最小批时的订单需要的sku_list
