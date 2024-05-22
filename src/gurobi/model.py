@@ -378,7 +378,7 @@ class IntegratedGurobi:
         return result_info
 
 if __name__ == "__main__":
-    input_path = r"/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    input_path = r"/src/Instance/myRandomInstanceGurobi2.json"
     instance_obj = read_input_data(input_path)
     gurobi_alg = IntegratedGurobi(instance=instance_obj, time_limit=3600, max_T=20)
     # Model = gp.Model('IntegratedGurobiModel')

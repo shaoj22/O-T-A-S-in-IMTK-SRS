@@ -76,7 +76,7 @@ def belong_block(sku):
 
 if __name__ == "__main__":
 
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    input_path = "/src/Instance/myRandomInstanceGurobi.json"
     instance_obj = read_input_data(input_path)
     order_list = instance_obj.order_list
     un_order_list = order_list.copy()
@@ -165,18 +165,21 @@ if __name__ == "__main__":
             block_idx = belong_block(sku)
             block_back[block_idx].append(sku)  # 上架
             tote_status[sku] = 0  # 说明料箱在架上
-
+    count = 0
     for idx, block_order_list in enumerate(block_result):
+        count = count + len(block_order_list)
         print(f"Block {idx} 下架顺序:", block_order_list)
         print(f"Block {idx} 下架次数:", len(block_order_list))
 
+    count = count + len(final_sku_list) * 2
     print("出库顺序和入库顺序:", final_sku_list)
     print("出库和入库次数:", len(final_sku_list), len(final_sku_list))
 
     for idx, block_order_list in enumerate(block_back):
+        count = count + len(block_order_list)
         print(f"Block {idx} 上架顺序:", block_order_list)
         print(f"Block {idx} 上架次数:", len(block_order_list))
-    print(f"总次数：", len(block_order_list) + 2 * len(final_sku_list) + len(block_order_list))
+    print(f"总次数：", count)
 
 
 

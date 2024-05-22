@@ -27,8 +27,8 @@ def similarity_matrix_calculate():
     return initial_round
 
 def similarity_calculate(sku_list1, sku_list2):
-    # 两个sku列表的sku数总和
-    sku_num1 = len(sku_list1) + len(sku_list2)
+    # # 两个sku列表的sku数总和
+    # sku_num1 = len(sku_list1) + len(sku_list2)
 
     # 两个sku列表相同sku数
     sku_num2 = 0
@@ -46,8 +46,8 @@ def similarity_calculate(sku_list1, sku_list2):
                 continue
 
     # 计算相似度
-    similarity = sku_num2 / sku_num1
-    return similarity
+    # similarity = sku_num2 / sku_num1
+    return sku_num2
 
 # 合并订单的sku数
 def combline_order_sku(order_list):
@@ -67,27 +67,30 @@ def delete_order(order_list1, order_list2):
     return order_list1
 
 def order_devide():
-    global station_buffer_num, order_list, station_matrix, station_list
+    global station_buffer_num, order_list, station_matrix, station_list, station_order_list
+
+    # 输出拣选站矩阵
+    for station in station_list:
+        orders_in_station = station_matrix[station]
+        print(f"拣选站 {station} 目前处理的订单：{orders_in_station}")
 
     for station in station_list:
         while len(station_matrix[station]) < station_buffer_num:
             # x = len(station_matrix[station])
             if len(order_list) == 0:
                 return None
-            sku_combine = combline_order_sku(station_matrix[station])
+            sku_combine = combline_order_sku(station_order_list)
             sim = -1
             for order in order_list:
                 simlarity = similarity_calculate(order['sku'], sku_combine)
                 if simlarity > sim:
                     sim = simlarity
                     order_choose = order
+            station_order_list.append(order)
             station_matrix[station].append(order)
             order_list.remove(order)
             # station_matrix[station].append(order_list.pop(0))
-    # 输出拣选站矩阵
-    for station in station_list:
-        orders_in_station = station_matrix[station]
-        print(f"拣选站 {station} 目前处理的订单：{orders_in_station}")
+
     return None
 
 
@@ -106,22 +109,23 @@ def sku_sevice(sorted_sku_list):
                         order['sku'].remove(sku)
                 if len(order['sku']) == 0:
                     station_matrix[i].remove(order)
+                    station_order_list.remove(order)
                     un_order_list.remove(order)
                     return None
 
 
 def process_orders():
-    global station_buffer_num, order_list, station_matrix, un_order_list
+    global station_buffer_num, order_list, station_matrix, un_order_list, station_order_list
 
-    process_order = []
-    for station in station_matrix:
-        for order in station:
-            process_order.append(order)
+    # process_order = []
+    # for station in station_matrix:
+    #     for order in station:
+    #         process_order.append(order)
 
     # 处理订单需要的sku_list
     # 统计每个商品编号的出现次数和所属订单编号
     sku_count = defaultdict(list)
-    for order in process_order:
+    for order in station_order_list:
         order_idx = order['orderIdx']
         for sku in order['sku']:
             sku_count[sku].append(order_idx)
@@ -148,7 +152,7 @@ def belong_block(sku):
 
 if __name__ == "__main__":
 
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    input_path = "/src/Instance/myRandomInstanceGurobi.json"
     instance_obj = read_input_data(input_path)
     order_list = instance_obj.order_list
     un_order_list = order_list.copy()
@@ -177,16 +181,17 @@ if __name__ == "__main__":
     Initial_orders = similarity_matrix_calculate()
 
     # 删除第一波次中的订单
-    cur_order_list = delete_order(order_list, Initial_orders)
+    order_list = delete_order(order_list, Initial_orders)
 
     # 迭代进入拣选站
     station_matrix = [Initial_orders]
+    station_order_list = [order for order in Initial_orders]
     for i in range(num_stations):
         round = station_matrix[i]
         while len(round) < station_buffer_num:
-            round_sku_list = combline_order_sku(round)  # 合并波次里订单的sku
+            round_sku_list = combline_order_sku(station_order_list)  # 合并拣选站里订单的sku
 
-            # 计算进入该波次的order
+            # 计算进入拣选站的order
             similarity_max = -1
             order_inter_index = -1
             for order in order_list:
@@ -198,15 +203,15 @@ if __name__ == "__main__":
                     continue
             for order in order_list:
                 if order['orderIdx'] == order_inter_index:
+                    station_order_list.append(order) # 拣选站处理订单
                     round.append(order)  # 在该波次中添加该订单
                     order_list = delete_order(order_list, [order])  # 从剩余订单里删除该订单
                     break
                 else:
                     continue
         if i < num_stations - 1:
-            cur_initial_round = similarity_matrix_calculate()  # 构建下一个拣选站的初始两个订单
+            cur_initial_round = []  # 构建下一个拣选站的订单list
             station_matrix.append(cur_initial_round)  # 在波次列表中添加新波次
-            order_list = delete_order(order_list, cur_initial_round)  # 在剩余订单中删除新波次的初始订单
 
 
     # 调用主函数，得到料箱出库顺序
@@ -265,18 +270,21 @@ if __name__ == "__main__":
             block_back[block_idx].append(sku)  # 上架
             tote_status[sku] = 0  # 说明料箱在架上
 
+    count = 0
     for idx, block_order_list in enumerate(block_result):
+        count = count + len(block_order_list)
         print(f"Block {idx} 下架顺序:", block_order_list)
         print(f"Block {idx} 下架次数:", len(block_order_list))
 
+    count = count + len(final_sku_list) * 2
     print("出库顺序和入库顺序:", final_sku_list)
     print("出库和入库次数:", len(final_sku_list), len(final_sku_list))
 
     for idx, block_order_list in enumerate(block_back):
+        count = count + len(block_order_list)
         print(f"Block {idx} 上架顺序:", block_order_list)
         print(f"Block {idx} 上架次数:", len(block_order_list))
-    print(f"总次数：", len(block_order_list) + 2 * len(final_sku_list) + len(block_order_list))
-
+    print(f"总次数：", count)
 
 
 

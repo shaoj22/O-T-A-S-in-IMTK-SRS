@@ -20,7 +20,7 @@ from src.greedy_algorithm.order_sequence_greedy import OrderSequenceGreedy
 from src.greedy_algorithm.tote_sequence_greedy import ToteSequenceGreedy
 from src.mate_heuristic_algorithm.adaptive_large_scale_neighborhood_search import ALNS
 # read data and print
-input_path = "D:\\Desktop\\python_code\\Joint_Optimization_of_Orders_and_Totes_for_WayZim\\src\\instance\\myRandomInstanceGurobi.json"
+input_path = "D:\\Desktop\\python_code\\Joint_Optimization_of_Orders_and_Totes_for_WayZim\\src\\instance\\myRandomInstanceGurobi2.json"
 instance_obj = read_input_data(input_path)
 # print('order_list:', instance_obj.order_list)
 # print('tote_list:', instance_obj.tote_list)
