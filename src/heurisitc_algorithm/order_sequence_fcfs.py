@@ -34,7 +34,6 @@ def process_orders():
             if order['orderIdx'] // (station_buffer_num * num_stations) == batch:
                 process_order.append(order)
 
-
     # 最小批时的订单需要的sku_list
     # 统计每个商品编号的出现次数和所属订单编号
     sku_count = defaultdict(list)
@@ -49,16 +48,23 @@ def process_orders():
     sorted_sku_list = [sku for sku, _ in sorted_skus]
 
     for sku_process in sorted_sku_list:
+        remove_order = False
         for station in station_matrix:
             for order in station_matrix[station]:
                 for sku in order['sku']:
                     if sku == sku_process:
                         order['sku'].remove(sku)
+            remove_orders = []
+            for order in station_matrix[station].copy():
                 if len(order['sku']) == 0:
-                    station_matrix[station].remove(order)
-                    un_order_list.remove(order)
-        # 来一个料箱就需判断是否有订单已完成
-        order_devide()
+                    remove_order = True
+                    remove_orders.append(order)
+            for order in remove_orders:
+                station_matrix[station].remove(order)
+                un_order_list.remove(order)
+        if remove_order:
+            # 来一个料箱就需判断是否有订单已完成
+            order_devide()
 
     return sorted_sku_list
 

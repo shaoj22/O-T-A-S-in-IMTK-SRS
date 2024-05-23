@@ -69,11 +69,6 @@ def delete_order(order_list1, order_list2):
 def order_devide():
     global station_buffer_num, order_list, station_matrix, station_list, station_order_list
 
-    # 输出拣选站矩阵
-    for station in station_list:
-        orders_in_station = station_matrix[station]
-        print(f"拣选站 {station} 目前处理的订单：{orders_in_station}")
-
     for station in station_list:
         while len(station_matrix[station]) < station_buffer_num:
             # x = len(station_matrix[station])
@@ -97,6 +92,7 @@ def order_devide():
 def sku_sevice(sorted_sku_list):
     global final_sku_list
     for sku_process in sorted_sku_list:
+        remove_order = False
         if len(final_sku_list) == 0:
             final_sku_list.append(sku_process)
         else:
@@ -107,11 +103,19 @@ def sku_sevice(sorted_sku_list):
                 for sku in order['sku']:
                     if sku == sku_process:
                         order['sku'].remove(sku)
+
+            remove_orders = []
+            for order in station_matrix[i].copy():  # 使用.copy()复制列表进行迭代，避免在迭代中修改原列表
                 if len(order['sku']) == 0:
-                    station_matrix[i].remove(order)
-                    station_order_list.remove(order)
-                    un_order_list.remove(order)
-                    return None
+                    remove_orders.append(order)
+                    remove_order = True
+            # 从各个列表中移除待移除的订单
+            for order in remove_orders:
+                station_matrix[i].remove(order)
+                station_order_list.remove(order)
+                un_order_list.remove(order)
+        if remove_order:
+            return None
 
 
 def process_orders():
@@ -135,11 +139,12 @@ def process_orders():
     # 提取排序后的商品编号
     sorted_sku_list = [sku for sku, _ in sorted_skus]
 
-    # 料箱到达
-    sku_sevice(sorted_sku_list)
-
-    # 有订单已完成需添加订单
-    order_devide()
+    if len(sorted_sku_list) != 0:
+        # 料箱到达
+        sku_sevice(sorted_sku_list)
+    if len(order_list) != 0:
+        # 有订单已完成需添加订单
+        order_devide()
 
     return None
 
@@ -215,10 +220,13 @@ if __name__ == "__main__":
             cur_initial_round = []  # 构建下一个拣选站的订单list
             station_matrix.append(cur_initial_round)  # 在波次列表中添加新波次
 
-
     # 调用主函数，得到料箱出库顺序
     final_sku_list = []
     while len(un_order_list) != 0:
+        # 输出拣选站矩阵
+        for station in station_list:
+            orders_in_station = station_matrix[station]
+            print(f"拣选站 {station} 目前处理的订单：{orders_in_station}")
         process_orders()
 
     # 倒退顺序
