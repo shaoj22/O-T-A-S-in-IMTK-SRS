@@ -152,7 +152,7 @@ def belong_block(sku):
 
 if __name__ == "__main__":
 
-    input_path = "/src/Instance/myRandomInstanceGurobi.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
     instance_obj = read_input_data(input_path)
     order_list = instance_obj.order_list
     un_order_list = order_list.copy()

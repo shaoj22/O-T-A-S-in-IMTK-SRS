@@ -34,6 +34,7 @@ def process_orders():
             if order['orderIdx'] // (station_buffer_num * num_stations) == batch:
                 process_order.append(order)
 
+
     # 最小批时的订单需要的sku_list
     # 统计每个商品编号的出现次数和所属订单编号
     sku_count = defaultdict(list)
@@ -76,7 +77,7 @@ def belong_block(sku):
 
 if __name__ == "__main__":
 
-    input_path = "/src/Instance/myRandomInstanceGurobi.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
     instance_obj = read_input_data(input_path)
     order_list = instance_obj.order_list
     un_order_list = order_list.copy()
