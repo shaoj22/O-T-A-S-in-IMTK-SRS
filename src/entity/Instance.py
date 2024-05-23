@@ -1,5 +1,5 @@
 class Instance:
-    def __init__(self, order_list=None, tote_list=None, station_list=None, block_list=None, station_buffer_num=5, block_storage_num=4):
+    def __init__(self, order_list=None, tote_list=None, station_list=None, block_list=None, station_buffer_num=None, block_storage_num=None):
         self.order_list = order_list  # 订单列表
         self.tote_list = tote_list  # 料箱列表
         self.station_list = station_list  # 工作站列表

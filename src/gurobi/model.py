@@ -121,13 +121,16 @@ class IntegratedGurobi:
         # 上架决策有关约束
         # 约束1：是否上架
         Model.addConstrs(x_itb_4[i, t, b] <= y_it_2[i, t] for i in range(self.I) for t in range(self.T) for b in range(self.B))
-        # 约束2：料箱i属于Block B才能上架和暂存
+        # 约束2：每个时刻下，每个Block中只能上架一个料箱
+        Model.addConstrs(
+            gp.quicksum(x_itb_4[i, t, b] for i in range(self.I)) <= 1 for t in range(self.T) for b in range(self.B))
+        # 约束3：料箱i属于Block B才能上架和暂存
         Model.addConstrs(x_itb_4[i, t, b] <= self.to_matrix_ib[i][b] for i in range(self.I) for t in range(self.T) for b in range(self.B))
-        # 约束3：同一时间在暂存区的料箱数量有限
+        # 约束4：同一时间在暂存区的料箱数量有限
         Model.addConstrs(gp.quicksum(y_itb_2[i, t, b] for b in range(self.B)) == y_it_2[i, t] for i in range(self.I) for t in range(self.T))
         Model.addConstrs(gp.quicksum(y_itb_2[i, t, b] for i in range(self.I)) <= self.K for t in range(self.T) for b in range(self.B))
         Model.addConstrs(y_itb_2[i, t, b] <= self.to_matrix_ib[i][b] for i in range(self.I) for t in range(self.T) for b in range(self.B))
-        # 约束4：料箱上架后，料箱在架上，不在暂存区
+        # 约束5：料箱上架后，料箱在架上，不在暂存区
         Model.addConstrs(y_it_2[i, t + 1] <= 1 - gp.quicksum(x_itb_4[i, t, b] for b in range(self.B)) for i in range(self.I) for t in range(self.T - 1))
         Model.addConstrs(y_it_4[i, t+1] <= y_it_4[i, t] + gp.quicksum(x_itb_4[i, t, b] for b in range(self.B)) for i in range(self.I) for t in range(self.T - 1))
         # 状态约束
@@ -375,7 +378,7 @@ class IntegratedGurobi:
         return result_info
 
 if __name__ == "__main__":
-    input_path = r"/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    input_path = r"/src/Instance/myRandomInstanceGurobi.json"
     instance_obj = read_input_data(input_path)
     gurobi_alg = IntegratedGurobi(instance=instance_obj, time_limit=3600, max_T=20)
     # Model = gp.Model('IntegratedGurobiModel')

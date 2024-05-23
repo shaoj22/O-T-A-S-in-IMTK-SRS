@@ -15,10 +15,14 @@ from src.entity.Block import Block
 
 class genRandomInstance:
 <<<<<<< HEAD
+<<<<<<< HEAD
     def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=5, block_storage_num=4, instance_name='myRandomInstance') -> None:
 =======
     def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=2, block_storage_num=2, instance_name='myRandomInstance') -> None:
 >>>>>>> f2fa453c1cd9227e2431a9a49fc79f776f26b991
+=======
+    def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=0, block_storage_num=0, instance_name='myRandomInstance') -> None:
+>>>>>>> f64ba4a82e9f5fd2069c4a76ee951eeac10c5df6
         """ init the instance
         Args:
             order_nums (int): the number of the orders.
@@ -82,7 +86,7 @@ class genRandomInstance:
             delete = False
             while not delete:
                 block = random.randint(0, block_nums - 1)
-                if len(sku_list[block]) < 8:
+                if len(sku_list[block]) < 4:
                     sku_list[block].append(i)
                     delete = True
         for block in range(self.block_nums):
@@ -130,6 +134,7 @@ class genRandomInstance:
 
 if "__main__" == __name__:
 <<<<<<< HEAD
+<<<<<<< HEAD
     order_nums = 30
     tote_nums = 30
     station_nums = 5
@@ -141,6 +146,15 @@ if "__main__" == __name__:
     block_nums = 1
 >>>>>>> f2fa453c1cd9227e2431a9a49fc79f776f26b991
     random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums,
+=======
+    order_nums = 50
+    tote_nums = 8
+    station_nums = 3
+    block_nums = 2
+    station_buffer_num = 2
+    block_storage_num = 4
+    random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums, station_buffer_num=station_buffer_num, block_storage_num=block_storage_num,
+>>>>>>> f64ba4a82e9f5fd2069c4a76ee951eeac10c5df6
                                         instance_name='myRandomInstanceGurobi')
     print("order_list:", random_instance.json_dict['order_list'])
     print("tote_list:", random_instance.json_dict['tote_list'])

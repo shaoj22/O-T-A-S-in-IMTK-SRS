@@ -16,7 +16,9 @@ def read_input_data(input_path):
     tote_list = json_file['tote_list']
     station_list = json_file['station_list']
     block_list = json_file['block_list']
-    return Instance(order_list, tote_list, station_list, block_list)
+    station_buffer_num = json_file['station_buffer_num']
+    block_storage_num = json_file['block_storage_num']
+    return Instance(order_list, tote_list, station_list, block_list, station_buffer_num, block_storage_num)
 
 
 if __name__ == "__main__":
