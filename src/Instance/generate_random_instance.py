@@ -117,7 +117,7 @@ class genRandomInstance:
 
 
 if "__main__" == __name__:
-    order_nums = 12
+    order_nums = 11
     tote_nums = 10
     station_nums = 3
     block_nums = 5

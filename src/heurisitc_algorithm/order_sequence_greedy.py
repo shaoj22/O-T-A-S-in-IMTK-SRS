@@ -189,6 +189,8 @@ if __name__ == "__main__":
     for i in range(num_stations):
         round = station_matrix[i]
         while len(round) < station_buffer_num:
+            if len(order_list) == 0:
+                break
             round_sku_list = combline_order_sku(station_order_list)  # 合并拣选站里订单的sku
 
             # 计算进入拣选站的order
