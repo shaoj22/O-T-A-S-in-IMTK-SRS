@@ -70,7 +70,7 @@ class genRandomInstance:
             delete = False
             while not delete:
                 block = random.randint(0, block_nums - 1)
-                if len(sku_list[block]) < 5:
+                if len(sku_list[block]) < 2:
                     sku_list[block].append(i)
                     delete = True
         for block in range(self.block_nums):
@@ -117,12 +117,12 @@ class genRandomInstance:
 
 
 if "__main__" == __name__:
-    order_nums = 300
-    tote_nums = 50
-    station_nums = 7
-    block_nums = 10
-    station_buffer_num = 30
-    block_storage_num = 4
+    order_nums = 11
+    tote_nums = 10
+    station_nums = 3
+    block_nums = 5
+    station_buffer_num = 4
+    block_storage_num = 3
     random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums, station_buffer_num=station_buffer_num, block_storage_num=block_storage_num,
                                         instance_name='myRandomInstanceGurobi')
     print("order_list:", random_instance.json_dict['order_list'])
