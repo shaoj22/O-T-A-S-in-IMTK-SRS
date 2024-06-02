@@ -64,15 +64,15 @@ def process_orders():
             # 出库 t+1
             x_it_2[sku_process][t + 1] = 1
             t_actual = t + 1
-        else:
-            print("zancun")
-            y_it_2[sku_process][t] = 1
-            y_itb_2[sku_process][t][block_idx] = 1
-            # 料箱在暂存区 直接出库
-            block_storage[block_idx].remove(sku)
-            tote_status[sku] = 2  # 拣选站
-            x_it_2[sku_process][t] = 1
-            t_actual = t
+        # else:
+        #     print("zancun")
+        #     y_it_2[sku_process][t] = 1
+        #     y_itb_2[sku_process][t][block_idx] = 1
+        #     # 料箱在暂存区 直接出库
+        #     block_storage[block_idx].remove(sku)
+        #     tote_status[sku] = 2  # 拣选站
+        #     x_it_2[sku_process][t] = 1
+        #     t_actual = t
         # 记录去了几个拣选站
         delta_t = 0
         remove_order = False
