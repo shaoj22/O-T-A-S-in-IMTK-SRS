@@ -50,10 +50,14 @@ class genRandomInstance:
         for order in range(self.order_nums):
             # gen the sku of the order
 <<<<<<< HEAD
+<<<<<<< HEAD
             sku_nums = random.randint(4, 6)  # sku nums
 =======
             sku_nums = random.randint(2, 3)  # sku nums
 >>>>>>> f2fa453c1cd9227e2431a9a49fc79f776f26b991
+=======
+            sku_nums = random.randint(5, 8)  # sku nums
+>>>>>>> b4a75b2bab41d51532cfdf1b3e00575e192b524f
             sku_list = []  # sku list
             for sku in range(sku_nums):
                 accept = False
@@ -86,7 +90,7 @@ class genRandomInstance:
             delete = False
             while not delete:
                 block = random.randint(0, block_nums - 1)
-                if len(sku_list[block]) < 4:
+                if len(sku_list[block]) < 2:
                     sku_list[block].append(i)
                     delete = True
         for block in range(self.block_nums):
@@ -135,6 +139,7 @@ class genRandomInstance:
 if "__main__" == __name__:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     order_nums = 30
     tote_nums = 30
     station_nums = 5
@@ -149,10 +154,14 @@ if "__main__" == __name__:
 =======
     order_nums = 50
     tote_nums = 8
+=======
+    order_nums = 11
+    tote_nums = 10
+>>>>>>> b4a75b2bab41d51532cfdf1b3e00575e192b524f
     station_nums = 3
-    block_nums = 2
-    station_buffer_num = 2
-    block_storage_num = 4
+    block_nums = 5
+    station_buffer_num = 4
+    block_storage_num = 3
     random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums, station_buffer_num=station_buffer_num, block_storage_num=block_storage_num,
 >>>>>>> f64ba4a82e9f5fd2069c4a76ee951eeac10c5df6
                                         instance_name='myRandomInstanceGurobi')

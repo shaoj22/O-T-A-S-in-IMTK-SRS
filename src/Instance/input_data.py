@@ -20,6 +20,22 @@ def read_input_data(input_path):
     block_storage_num = json_file['block_storage_num']
     return Instance(order_list, tote_list, station_list, block_list, station_buffer_num, block_storage_num)
 
+def read_input_data_initial(input_path):
+    with open(input_path, 'r') as f:
+        json_file = json.load(f)
+    x_op = json_file['x_op']
+    x_itb_1 = json_file['x_itb_1']
+    x_it_2 = json_file['x_it_2']
+    x_itp_2 = json_file['x_itp_2']
+    x_it_3 = json_file['x_it_3']
+    x_itb_4 = json_file['x_itb_4']
+    y_it_2 = json_file['y_it_2']
+    y_itb_2 = ['y_itb_2']
+    y_it_3 = ['y_it_3']
+    y_it_4 = json_file['y_it_4']
+    z_oit_p = json_file['z_oit_p']
+    z_ot_p = json_file['z_ot_p']
+    return x_op, x_itb_1, x_it_2, x_itp_2, x_it_3, x_itb_4, y_it_2, y_itb_2, y_it_3, y_it_4, z_oit_p, z_ot_p
 
 if __name__ == "__main__":
     input_path = "myRandomInstanceGurobi.json"

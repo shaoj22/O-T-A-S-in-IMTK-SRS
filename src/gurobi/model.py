@@ -2,6 +2,9 @@ import gurobipy as gp
 import time
 from gurobipy import GRB
 from src.Instance.input_data import read_input_data
+# from src.Instance.input_data import read_input_data_initial
+import json
+
 
 class IntegratedGurobi:
     def __init__(self, instance, time_limit=None, init_solution=None, max_T=100, sita=3):
@@ -144,6 +147,45 @@ class IntegratedGurobi:
         Model.addConstrs(gp.quicksum(x_itb_1[i, t, b] for b in range(self.B)) + x_it_2[i, t] + x_it_3[i, t] + gp.quicksum(x_itb_4[i, t, b] for b in range(self.B)) <= 1 for i in range(self.I) for t in range(self.T))
         # Model.optimize()
         Model.update()
+
+        # 设置初始解
+        for o, p in op_list:
+            x_op[o, p].start = self.init_solution['x_op'][o][p]
+
+        for i, t, b in itb_list:
+            x_itb_1[i, t, b].start = self.init_solution['x_itb_1'][i][t][b]
+
+        for i, t in it_list:
+            x_it_2[i, t].start = self.init_solution['x_it_2'][i][t]
+
+        for i, t, p in itp_list:
+            x_itp_2[i, t, p].start = self.init_solution['x_itp_2'][i][t][p]
+
+        for i, t in it_list:
+            x_it_3[i, t].start = self.init_solution['x_it_3'][i][t]
+
+        for i, t, b in itb_list:
+            x_itb_4[i, t, b].start = self.init_solution['x_itb_4'][i][t][b]
+
+        for i, t in it_list:
+            y_it_2[i, t].start = self.init_solution['y_it_2'][i][t]
+
+        for i, t, b in itb_list:
+            y_itb_2[i, t, b].start = self.init_solution['y_itb_2'][i][t][b]
+
+        for i, t in it_list:
+            y_it_3[i, t].start = self.init_solution['y_it_3'][i][t]
+
+        for i, t in it_list:
+            y_it_4[i, t].start = self.init_solution['y_it_4'][i][t]
+
+        for o, i, t, p in oitp_list:
+            z_oit_p[o, i, t, p].start = self.init_solution['z_oit_p'][o][i][t][p]
+
+        for o, t, p in otp_list:
+            z_ot_p[o, t, p].start = self.init_solution['z_ot_p'][o][t][p]
+
+
         # result_info = {
         #     'x_op': x_op,
         #     'x_itb_1': x_itb_1,
@@ -378,9 +420,13 @@ class IntegratedGurobi:
         return result_info
 
 if __name__ == "__main__":
-    input_path = r"/src/Instance/myRandomInstanceGurobi.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
     instance_obj = read_input_data(input_path)
-    gurobi_alg = IntegratedGurobi(instance=instance_obj, time_limit=3600, max_T=20)
+    input_path2 = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/gurobi/Initial_gurobi.json"
+    with open(input_path2, 'r') as f:
+        json_file = json.load(f)
+    # Initial_solution = read_input_data_initial("/src/gurobi/Initial_gurobi.json")
+    gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=9600, max_T=20)
     # Model = gp.Model('IntegratedGurobiModel')
     # result_info = gurobi_alg.build_gurobi_model(Model=Model)
     result_info = gurobi_alg.run_gurobi_model()
