@@ -2,7 +2,7 @@
 from collections import defaultdict
 from src.Instance.input_data import read_input_data
 from itertools import groupby
-
+import json
 
 def order_devide(t):
     global station_buffer_num, order_list, station_matrix, station_list, x_op
@@ -261,77 +261,11 @@ if __name__ == "__main__":
         sku_list = process_orders()
         for sku in sku_list:
             or_final_sku_list.append(sku)
-
+    # 出库顺序
     final_sku_list = [sku for sku, _ in groupby(or_final_sku_list)]
 
-    # 倒退顺序
-    block_out = []  # 出库顺序
-    block_result = [[] for _ in range(len(block_list))]  # 每个 Block 的下架顺序列表
-    block_back = [[] for _ in range(len(block_list))]  # 每个 Block 的上架顺序列表
-    block_storage = {blk['blockIdx']: [] for blk in block_list}  # block中暂存情况
-
-    for i, sku in enumerate(final_sku_list):
-        block_idx = belong_block(sku)
-        if tote_status[sku] == 0:  # 说明料箱在架上
-            block_result[block_idx].append(sku)  # 下架
-            tote_status[sku] = 1  # 暂存区
-            # 出库
-            tote_status[sku] = 2  # 拣选站
-            # 入库
-            # block_storage[block_idx].append(sku)
-            tote_status[sku] = 1  # 暂存区
-            un_storage_num = block_storage_num - len(block_storage[block_idx])
-            len_un = len(final_sku_list) - i - 1
-            min_un = min(un_storage_num, len_un)
-            for b in range(min_un):
-                if final_sku_list[i+b+1] == sku:
-                    block_storage[block_idx].append(sku) # 暂存
-                    break
-                if b == min_un - 1:
-                    block_back[block_idx].append(sku) # 上架
-                    # block_storage[block_idx].remove(sku)
-                    tote_status[sku] = 0  # 说明料箱在架上
-        else:
-            # 料箱在暂存区 直接出库
-            block_storage[block_idx].remove(sku)
-            tote_status[sku] = 2  # 拣选站
-            # 入库
-            tote_status[sku] = 1  # 暂存区
-            # block_storage[block_idx].append(sku)
-            un_storage_num = block_storage_num - len(block_storage[block_idx])
-            len_un = len(final_sku_list) - i - 1
-            min_un = min(un_storage_num, len_un)
-            for b in range(min_un):
-                if final_sku_list[i + b + 1] == sku:
-                    block_storage[block_idx].append(sku)  # 暂存
-                    break
-                if b == un_storage_num - 1:
-                    block_back[block_idx].append(sku)  # 上架
-                    # block_storage[block_idx].remove(sku)
-                    tote_status[sku] = 0  # 说明料箱在架上
-    # 强制上架
-    for sku in final_sku_list:
-        if tote_status[sku] != 0:  # 料箱不在架上
-            block_idx = belong_block(sku)
-            block_back[block_idx].append(sku)  # 上架
-            tote_status[sku] = 0  # 说明料箱在架上
-
-
-    count = 0
-    for idx, block_order_list in enumerate(block_result):
-        count = count + len(block_order_list)
-        print(f"Block {idx} 下架顺序:", block_order_list)
-        print(f"Block {idx} 下架次数:", len(block_order_list))
-
-    count = count + len(final_sku_list) * 2
-    print("出库顺序和入库顺序:", final_sku_list)
-    print("出库和入库次数:", len(final_sku_list), len(final_sku_list))
-
-    for idx, block_order_list in enumerate(block_back):
-        count = count + len(block_order_list)
-        print(f"Block {idx} 上架顺序:", block_order_list)
-        print(f"Block {idx} 上架次数:", len(block_order_list))
-    print(f"总次数：", count)
+    #下架、出库、上架顺序和出库一样
+    print(f"总次数：", 4 * len(final_sku_list))
 
     # 订单上墙
     for order in co_order_list:
@@ -378,5 +312,26 @@ if __name__ == "__main__":
                 xitb4 = xitb4 + x_itb_4[sku][t][block['blockIdx']]
             if xitb1 + xitb4 + x_it_2[sku][t] + x_it_3[sku][t] > 1:
                 print('error2')
+
+    # 存储结果
+    result_info = {
+        'x_op': x_op,
+        'x_itb_1': x_itb_1,
+        'x_it_2': x_it_2,
+        'x_itp_2': x_itp_2,
+        'x_it_3': x_it_3,
+        'x_itb_4': x_itb_4,
+        'y_it_2': y_it_2,
+        'y_itb_2': y_itb_2,
+        'y_it_3': y_it_3,
+        'y_it_4': y_it_4,
+        'z_oit_p': z_oit_p,
+        'z_ot_p': z_ot_p,
+    }
+
+    json_data = json.dumps(result_info, indent=4)
+
+    with open('Initial_gurobi.json', 'w') as json_file:
+        json_file.write(json_data)
 
 
