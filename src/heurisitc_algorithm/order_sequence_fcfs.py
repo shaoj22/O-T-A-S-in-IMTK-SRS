@@ -1,6 +1,7 @@
 from collections import defaultdict
 from src.Instance.input_data import read_input_data
 from itertools import groupby
+import time
 
 
 def order_devide():
@@ -82,8 +83,8 @@ def belong_block(sku):
 
 
 if __name__ == "__main__":
-
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    start_time = time.time()  # 记录开始时间的时间戳
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-large-2.json"
     instance_obj = read_input_data(input_path)
     order_list = instance_obj.order_list
     un_order_list = order_list.copy()
@@ -187,6 +188,7 @@ if __name__ == "__main__":
         print(f"Block {idx} 上架顺序:", block_order_list)
         print(f"Block {idx} 上架次数:", len(block_order_list))
     print(f"总次数：", count)
-
+    end_time = time.time()
+    print(f"经过时间：{end_time - start_time}秒")
 
 

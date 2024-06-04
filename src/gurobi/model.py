@@ -92,10 +92,8 @@ class IntegratedGurobi:
         # 约束1：每个时刻下，每个Block中只能下架一个料箱
         Model.addConstrs(gp.quicksum(x_itb_1[i, t, b] for i in range(self.I)) <= 1 for t in range(self.T) for b in range(self.B))
         # 约束2：当料箱在架上时才能下架，下架后在暂存区（回库以后也在存储区）
-        # Model.addConstrs(y_it_4[i, t+1] + y_it_2[i, t+2] <= y_it_4[i, t] + gp.quicksum(x_itb_4[i, t, b] for b in range(self.B)) for i in range(self.I) for t in range(self.T - 2))
         Model.addConstrs(x_itb_1[i, t, b] <= y_it_4[i, t] for i in range(self.I) for t in range(self.T) for b in range(self.B))
         Model.addConstrs(y_it_4[i, t+1] <= 1 - gp.quicksum(x_itb_1[i, t, b] for b in range(self.B)) for i in range(self.I) for t in range(self.T - 1))
-        # Model.addConstrs(y_it_2[i, t+1] + y_it_3[i, t+2] + y_it_4[i, t+2] <= y_it_2[i, t] + gp.quicksum(x_itb_1[i, t, b] for b in range(self.B)) + x_it_3[i, t] for i in range(self.I) for t in range(self.T - 2))
         Model.addConstrs(y_it_2[i, t+1] <= y_it_2[i, t] + gp.quicksum(x_itb_1[i, t, b] for b in range(self.B)) + x_it_3[i, t] for i in range(self.I) for t in range(self.T - 1))
         # 约束3：料箱在Block b中才能下架
         Model.addConstrs(x_itb_1[i, t, b] <= self.to_matrix_ib[i][b] for i in range(self.I) for t in range(self.T) for b in range(self.B))
@@ -106,17 +104,15 @@ class IntegratedGurobi:
         Model.addConstrs(x_itp_2[i, t, p] <= x_it_2[i, t] for i in range(self.I) for t in range(self.T) for p in range(self.P))
         # 约束3：当拣选站上的订单需要料箱i时，该料箱才会去到该拣选站
         Model.addConstrs(x_itp_2[i, t, p] <= gp.quicksum(self.to_matrix_oi[o][i] * z_ot_p[o, t, p] for o in range(self.O)) for i in range(self.I) for t in range(self.T) for p in range(self.P))
-        # 约束4：料箱在暂存区时才能出库
+        # # 约束4：料箱在暂存区时才能出库
         Model.addConstrs(x_it_2[i, t] <= y_it_2[i, t] for i in range(self.I) for t in range(self.T))
         # 约束5：料箱出库后，料箱在拣选站
-        # Model.addConstrs(y_it_3[i, t+1] + y_it_2[i, t+2] <= y_it_3[i, t] + x_it_2[i, t] for i in range(self.I) for t in range(self.T - 2))
         Model.addConstrs(y_it_3[i, t+1] <= y_it_3[i, t] + x_it_2[i, t] for i in range(self.I) for t in range(self.T - 1))
         # 约束6：出库后，料箱不在暂存区：
         Model.addConstrs(y_it_2[i, t+1] <= 1 - x_it_2[i, t] for i in range(self.I) for t in range(self.T - 1))
         # 入库决策有关约束
         # 约束1：入库的顺序时刻为出库顺序时刻+访问的拣选站的数量
         Model.addConstrs(t2 - t1 - gp.quicksum(x_itp_2[i, t1, p] for p in range(self.P)) >= self.bigM * (x_it_3[i, t2] + x_it_2[i, t1] - 2) for i in range(self.I) for t1 in range(self.T) for t2 in range(t1, self.T))
-        # Model.addConstrs(t2 - t1 - gp.quicksum(x_itp_2[i, t1, p] for p in range(self.P)) >= self.bigM * (x_it_3[i, t2] + x_it_2[i, t1] - 2) for i in range(self.I) for t1 in range(self.T-3) for t2 in range(t1, t1+3))
         # 约束2：料鲜在拣选站才能出库
         Model.addConstrs(x_it_3[i, t] <= y_it_3[i, t] for i in range(self.I) for t in range(self.T))
         # 入库后，料箱存储在暂存区，不在拣选站
@@ -420,13 +416,13 @@ class IntegratedGurobi:
         return result_info
 
 if __name__ == "__main__":
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-small-1.json"
     instance_obj = read_input_data(input_path)
     input_path2 = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/gurobi/Initial_gurobi.json"
     with open(input_path2, 'r') as f:
         json_file = json.load(f)
     # Initial_solution = read_input_data_initial("/src/gurobi/Initial_gurobi.json")
-    gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=9600, max_T=20)
+    gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=3600, max_T=20)
     # Model = gp.Model('IntegratedGurobiModel')
     # result_info = gurobi_alg.build_gurobi_model(Model=Model)
     result_info = gurobi_alg.run_gurobi_model()

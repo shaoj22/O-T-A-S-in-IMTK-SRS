@@ -1,0 +1,30 @@
+/Users/xiekio/miniconda3/envs/xky/bin/python /Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/heurisitc_algorithm/order_sequence_greedy.py
+拣选站 0 目前处理的订单：[{'orderIdx': 0, 'sku': [7, 6, 4, 3, 0]}, {'orderIdx': 2, 'sku': [0, 7, 3, 1, 4]}]
+拣选站 1 目前处理的订单：[{'orderIdx': 4, 'sku': [7, 4, 3, 6, 1]}]
+拣选站 2 目前处理的订单：[{'orderIdx': 1, 'sku': [6, 7, 3]}]
+拣选站 0 目前处理的订单：[{'orderIdx': 0, 'sku': [4, 0]}, {'orderIdx': 2, 'sku': [0, 1, 4]}]
+拣选站 1 目前处理的订单：[{'orderIdx': 4, 'sku': [4, 1]}]
+拣选站 2 目前处理的订单：[{'orderIdx': 5, 'sku': [4, 5, 3]}]
+拣选站 0 目前处理的订单：[{'orderIdx': 2, 'sku': [1]}]
+拣选站 1 目前处理的订单：[{'orderIdx': 4, 'sku': [1]}]
+拣选站 2 目前处理的订单：[{'orderIdx': 5, 'sku': [5, 3]}]
+拣选站 0 目前处理的订单：[{'orderIdx': 3, 'sku': [2, 7, 1]}]
+拣选站 1 目前处理的订单：[]
+拣选站 2 目前处理的订单：[{'orderIdx': 5, 'sku': [5, 3]}]
+拣选站 0 目前处理的订单：[]
+拣选站 1 目前处理的订单：[]
+拣选站 2 目前处理的订单：[{'orderIdx': 5, 'sku': [5, 3]}]
+Block 0 下架顺序: [3, 0, 1, 2, 3]
+Block 0 下架次数: 5
+Block 1 下架顺序: [7, 6, 4, 7, 5]
+Block 1 下架次数: 5
+出库顺序和入库顺序: [7, 3, 6, 4, 0, 1, 2, 7, 1, 5, 3]
+出库和入库次数: 11 11
+Block 0 上架顺序: [3, 0, 2, 3, 1]
+Block 0 上架次数: 5
+Block 1 上架顺序: [7, 6, 4, 7, 5]
+Block 1 上架次数: 5
+总次数： 42
+经过时间：0.0010449886322021484秒
+
+进程已结束,退出代码0

@@ -25,7 +25,7 @@ def order_devide(t):
 
 
 def process_orders():
-    global station_buffer_num, order_list, station_matrix, un_order_list, t
+    global station_buffer_num, order_list, station_matrix, un_order_list, t, T_list, tote_list
 
     # 优先考虑最小批时的订单
     process_order = []
@@ -54,6 +54,8 @@ def process_orders():
 
     for sku_process in sorted_sku_list:
         block_idx = belong_block(sku_process)
+        if t < T_list[sku_process]:
+            t = T_list[sku_process]
         if tote_status[sku_process] == 0:  # 说明料箱在架上
             # y_it_4[sku_process][t] = 1
             x_itb_1[sku_process][t][block_idx] = 1
@@ -106,9 +108,21 @@ def process_orders():
         y_itb_2[sku_process][t_actual + delta_t + 1][block_idx] = 1
         y_it_4[sku_process][t_actual + delta_t + 1] = 0  # 不在架上
         # 上架
-        x_itb_4[sku_process][t_actual + delta_t + 1][block_idx] = 1
-        # y_it_4[sku_process][t_actual+delta_t+3] = 1
-        tote_status[sku_process] = 0  # 架上
+        for tt in range(t_actual + delta_t + 1, T):
+            xibt4 = 0
+            for tote in tote_list:
+                xibt4 = xibt4 + x_itb_4[tote][tt][block_idx]
+            if xibt4 > 0:
+                # 继续留在暂存区
+                y_it_2[sku_process][tt+1] = 1
+                y_itb_2[sku_process][tt+1][block_idx] = 1
+                y_it_4[sku_process][tt+1] = 0  # 不在架上
+            else:
+                x_itb_4[sku_process][tt][block_idx] = 1
+                # 上架后状态才可以改变
+                T_list[sku_process] = tt + 1
+                tote_status[sku_process] = 0  # 架上
+                break
         if remove_order:
             # 来一个料箱就需判断是否有订单已完成
             order_devide(t_actual+1)
@@ -218,7 +232,7 @@ def Initial_variables():
 
 if __name__ == "__main__":
 
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-small-1.json"
     instance_obj = read_input_data(input_path)
     order_list = instance_obj.order_list
     un_order_list = order_list.copy()
@@ -249,6 +263,8 @@ if __name__ == "__main__":
 
     # 初始化拣选站矩阵，用字典表示，键是拣选站编号，值是订单列表
     station_matrix = {station: [] for station in station_list}
+    # 上架时间
+    T_list = [0] * len(tote_list)
 
     # 分配订单到拣选站
     t = 0
@@ -311,7 +327,7 @@ if __name__ == "__main__":
                 xitb1 = xitb1 + x_itb_1[sku][t][block['blockIdx']]
                 xitb4 = xitb4 + x_itb_4[sku][t][block['blockIdx']]
             if xitb1 + xitb4 + x_it_2[sku][t] + x_it_3[sku][t] > 1:
-                print('error2')
+                print('error2', xitb1, xitb4, x_it_2[sku][t], x_it_3[sku][t])
 
     # 存储结果
     result_info = {
