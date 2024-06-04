@@ -3,9 +3,10 @@ from collections import defaultdict
 from src.Instance.input_data import read_input_data
 from itertools import groupby
 import json
+from copy import deepcopy
 
 def order_devide(t):
-    global station_buffer_num, order_list, station_matrix, station_list, x_op
+    global station_buffer_num, order_list, station_matrix, station_list, x_op, co_order_list
 
     for i, station in enumerate(station_list):
         while len(station_matrix[station]) < station_buffer_num:
@@ -81,12 +82,15 @@ def process_orders():
         for i, station in enumerate(station_matrix):
             st = 0
             for order in station_matrix[station]:
-                for sku in order['sku']:
-                    if sku == sku_process:
-                        order['sku'].remove(sku)
-                        z_oit_p[order['orderIdx']][sku_process][t_actual][i] = 1
-                        x_itp_2[sku_process][t_actual][i] = 1
-                        st = 1
+                if sku_process in order['sku']:
+                    order['sku'].remove(sku_process)
+                    z_oit_p[order['orderIdx']][sku_process][t_actual][i] = 1
+                    x_itp_2[sku_process][t_actual][i] = 1
+                    st = 1
+                    for order_other in station_matrix[station]:
+                        if order['orderIdx'] != order_other['orderIdx']:
+                            if sku_process in co_order_list[order_other['orderIdx']]['sku']:
+                                z_oit_p[order_other['orderIdx']][sku_process][t_actual][i] = 1
             delta_t = delta_t + st
             remove_orders = []
             for order in station_matrix[station].copy():
@@ -232,11 +236,13 @@ def Initial_variables():
 
 if __name__ == "__main__":
 
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-small-1.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-medium-1.json"
     instance_obj = read_input_data(input_path)
     order_list = instance_obj.order_list
     un_order_list = order_list.copy()
-    co_order_list = order_list.copy()
+    co_order_list = deepcopy(order_list)
+    # for order in order_list:
+    #     co_order_list.append(order.copy())
     # 设置初始状态
     tote_list = instance_obj.tote_list
 
@@ -248,7 +254,7 @@ if __name__ == "__main__":
     num_orders = instance_obj.order_num
     num_totes = len(tote_list)
     num_blocks = len(block_list)
-    T = 20
+    T = 35
 
     # 初始化全局变量并调用主函数
     station_buffer = []
@@ -329,6 +335,20 @@ if __name__ == "__main__":
             if xitb1 + xitb4 + x_it_2[sku][t] + x_it_3[sku][t] > 1:
                 print('error2', xitb1, xitb4, x_it_2[sku][t], x_it_3[sku][t])
 
+
+    # 检验订单完成
+    for order in co_order_list:
+        for station in station_list:
+            for t in range(T):
+                for sku in tote_list:
+                    if sku in order['sku']:
+                        a_oi = 1
+                    else:
+                        a_oi = 0
+                    if x_itp_2[sku][t][station] + z_ot_p[order['orderIdx']][t][station] + a_oi - 2 > z_oit_p[order['orderIdx']][sku][t][station]:
+                        print('err', x_itp_2[sku][t][station], z_ot_p[order['orderIdx']][t][station], a_oi, z_oit_p[order['orderIdx']][sku][t][station], sku)
+                    if x_itp_2[sku][t][station] < z_oit_p[order['orderIdx']][sku][t][station]:
+                        print('err2', x_itp_2[sku][t][station], z_oit_p[order['orderIdx']][sku][t][station], sku)
     # 存储结果
     result_info = {
         'x_op': x_op,

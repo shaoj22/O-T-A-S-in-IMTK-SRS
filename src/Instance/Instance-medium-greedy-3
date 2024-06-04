@@ -4,6 +4,7 @@
     block_nums = 4
     station_buffer_num = 2
     block_storage_num = 2
+
 拣选站 0 目前处理的订单：[{'orderIdx': 0, 'sku': [13, 16, 6, 0, 1]}, {'orderIdx': 3, 'sku': [12, 4, 16, 13, 10, 0, 6, 3]}]
 拣选站 1 目前处理的订单：[{'orderIdx': 1, 'sku': [3, 11, 9, 10, 1, 6, 7]}, {'orderIdx': 8, 'sku': [9, 1, 4, 13, 0, 17]}]
 拣选站 2 目前处理的订单：[{'orderIdx': 7, 'sku': [3, 12, 17, 9, 5, 4]}, {'orderIdx': 4, 'sku': [0, 4, 6, 11, 18]}]
