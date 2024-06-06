@@ -37,7 +37,7 @@ class genRandomInstance:
         """ gen the orders list """
         for order in range(self.order_nums):
             # gen the sku of the order
-            sku_nums = random.randint(7, 9)  # sku nums
+            sku_nums = random.randint(2, 4)  # sku nums
             sku_list = []  # sku list
             for sku in range(sku_nums):
                 accept = False
@@ -70,7 +70,7 @@ class genRandomInstance:
             delete = False
             while not delete:
                 block = random.randint(0, block_nums - 1)
-                if len(sku_list[block]) < 6:
+                if len(sku_list[block]) < 2:
                     sku_list[block].append(i)
                     delete = True
         for block in range(self.block_nums):
@@ -117,12 +117,12 @@ class genRandomInstance:
 
 
 if "__main__" == __name__:
-    order_nums = 15
-    tote_nums = 30
-    station_nums = 4
-    block_nums = 5
-    station_buffer_num = 3
-    block_storage_num = 3
+    order_nums = 4
+    tote_nums = 6
+    station_nums = 2
+    block_nums = 3
+    station_buffer_num = 1
+    block_storage_num = 2
     random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums, station_buffer_num=station_buffer_num, block_storage_num=block_storage_num,
                                         instance_name='myRandomInstanceGurobi')
     print("order_list:", random_instance.json_dict['order_list'])

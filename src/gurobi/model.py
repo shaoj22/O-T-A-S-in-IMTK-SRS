@@ -87,7 +87,7 @@ class IntegratedGurobi:
         # 约束5：每个订单在拣选站上执行的时间必须连续
         Model.addConstrs(z_ot_p[o, t2, p] >= z_ot_p[o, t1, p] + z_ot_p[o, t3, p] + self.time_matrix[t2][t1] + self.time_matrix[t3][t2] - 3 for t1 in range(self.T) for t2 in range(self.T) for t3 in range(self.T) for o in range(self.O) for p in range(self.P))
         # 约束6：工作站平衡约束
-        # Model.addConstrs(gp.quicksum(x_itp_2[i, t, p1] for i in range(self.I) for t in range(self.T)) - gp.quicksum(x_itp_2[i, t, p2] for i in range(self.I) for t in range(self.T)) <= self.sita for p1 in range(self.P) for p2 in range(self.P))
+        Model.addConstrs(gp.quicksum(x_itp_2[i, t, p1] for i in range(self.I) for t in range(self.T)) - gp.quicksum(x_itp_2[i, t, p2] for i in range(self.I) for t in range(self.T)) <= self.sita for p1 in range(self.P) for p2 in range(self.P))
         # 下架决策有关约束
         # 约束1：每个时刻下，每个Block中只能下架一个料箱
         Model.addConstrs(gp.quicksum(x_itb_1[i, t, b] for i in range(self.I)) <= 1 for t in range(self.T) for b in range(self.B))
@@ -113,6 +113,7 @@ class IntegratedGurobi:
         # 入库决策有关约束
         # 约束1：入库的顺序时刻为出库顺序时刻+访问的拣选站的数量
         Model.addConstrs(t2 - t1 - gp.quicksum(x_itp_2[i, t1, p] for p in range(self.P)) >= self.bigM * (x_it_3[i, t2] + x_it_2[i, t1] - 2) for i in range(self.I) for t1 in range(self.T) for t2 in range(t1, self.T))
+        # Model.addConstrs(t2 - t1 - gp.quicksum(x_itp_2[i, t1, p] for p in range(self.P)) <= self.bigM * (2 - x_it_3[i, t2] - x_it_2[i, t1]) for i in range(self.I) for t1 in range(self.T - self.P) for t2 in range(t1, t1 + self.P + 1))
         # 约束2：料鲜在拣选站才能出库
         Model.addConstrs(x_it_3[i, t] <= y_it_3[i, t] for i in range(self.I) for t in range(self.T))
         # 入库后，料箱存储在暂存区，不在拣选站
@@ -144,42 +145,42 @@ class IntegratedGurobi:
         # Model.optimize()
         Model.update()
 
-        # 设置初始解
-        for o, p in op_list:
-            x_op[o, p].start = self.init_solution['x_op'][o][p]
-
-        for i, t, b in itb_list:
-            x_itb_1[i, t, b].start = self.init_solution['x_itb_1'][i][t][b]
-
-        for i, t in it_list:
-            x_it_2[i, t].start = self.init_solution['x_it_2'][i][t]
-
-        for i, t, p in itp_list:
-            x_itp_2[i, t, p].start = self.init_solution['x_itp_2'][i][t][p]
-
-        for i, t in it_list:
-            x_it_3[i, t].start = self.init_solution['x_it_3'][i][t]
-
-        for i, t, b in itb_list:
-            x_itb_4[i, t, b].start = self.init_solution['x_itb_4'][i][t][b]
-
-        for i, t in it_list:
-            y_it_2[i, t].start = self.init_solution['y_it_2'][i][t]
-
-        for i, t, b in itb_list:
-            y_itb_2[i, t, b].start = self.init_solution['y_itb_2'][i][t][b]
-
-        for i, t in it_list:
-            y_it_3[i, t].start = self.init_solution['y_it_3'][i][t]
-
-        for i, t in it_list:
-            y_it_4[i, t].start = self.init_solution['y_it_4'][i][t]
-
-        for o, i, t, p in oitp_list:
-            z_oit_p[o, i, t, p].start = self.init_solution['z_oit_p'][o][i][t][p]
-
-        for o, t, p in otp_list:
-            z_ot_p[o, t, p].start = self.init_solution['z_ot_p'][o][t][p]
+        # # 设置初始解
+        # for o, p in op_list:
+        #     x_op[o, p].start = self.init_solution['x_op'][o][p]
+        #
+        # for i, t, b in itb_list:
+        #     x_itb_1[i, t, b].start = self.init_solution['x_itb_1'][i][t][b]
+        #
+        # for i, t in it_list:
+        #     x_it_2[i, t].start = self.init_solution['x_it_2'][i][t]
+        #
+        # for i, t, p in itp_list:
+        #     x_itp_2[i, t, p].start = self.init_solution['x_itp_2'][i][t][p]
+        #
+        # for i, t in it_list:
+        #     x_it_3[i, t].start = self.init_solution['x_it_3'][i][t]
+        #
+        # for i, t, b in itb_list:
+        #     x_itb_4[i, t, b].start = self.init_solution['x_itb_4'][i][t][b]
+        #
+        # for i, t in it_list:
+        #     y_it_2[i, t].start = self.init_solution['y_it_2'][i][t]
+        #
+        # for i, t, b in itb_list:
+        #     y_itb_2[i, t, b].start = self.init_solution['y_itb_2'][i][t][b]
+        #
+        # for i, t in it_list:
+        #     y_it_3[i, t].start = self.init_solution['y_it_3'][i][t]
+        #
+        # for i, t in it_list:
+        #     y_it_4[i, t].start = self.init_solution['y_it_4'][i][t]
+        #
+        # for o, i, t, p in oitp_list:
+        #     z_oit_p[o, i, t, p].start = self.init_solution['z_oit_p'][o][i][t][p]
+        #
+        # for o, t, p in otp_list:
+        #     z_ot_p[o, t, p].start = self.init_solution['z_ot_p'][o][t][p]
 
 
         # result_info = {
@@ -203,6 +204,8 @@ class IntegratedGurobi:
 
     def run_gurobi_model(self):
         Model = gp.Model('IntegratedGurobiModel')
+        # Model.setParam("LogFile", "output-medium-1")  # 日志文件路径
+        # Model.setParam("Verbosity", 1)  # 日志级别，范围从0到3，数字越大，输出越详细
         self.build_gurobi_model(Model=Model)
         if self.time_limit is not None:
             Model.setParam('TimeLimit', self.time_limit)
@@ -416,13 +419,13 @@ class IntegratedGurobi:
         return result_info
 
 if __name__ == "__main__":
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-medium-1.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
     instance_obj = read_input_data(input_path)
     input_path2 = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/gurobi/Initial_gurobi.json"
     with open(input_path2, 'r') as f:
         json_file = json.load(f)
     # Initial_solution = read_input_data_initial("/src/gurobi/Initial_gurobi.json")
-    gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=3600, max_T=35)
+    gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=3600, max_T=20)
     # Model = gp.Model('IntegratedGurobiModel')
     # result_info = gurobi_alg.build_gurobi_model(Model=Model)
     result_info = gurobi_alg.run_gurobi_model()
