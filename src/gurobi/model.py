@@ -2,7 +2,7 @@ import gurobipy as gp
 import time
 from gurobipy import GRB
 from src.Instance.input_data import read_input_data
-# from src.Instance.input_data import read_input_data_initial
+from src.Instance.input_data import read_input_data_initial
 import json
 
 
