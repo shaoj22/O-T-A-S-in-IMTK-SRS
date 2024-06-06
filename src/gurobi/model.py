@@ -2,7 +2,7 @@ import gurobipy as gp
 import time
 from gurobipy import GRB
 from src.Instance.input_data import read_input_data
-from src.Instance.input_data import read_input_data_initial
+# from src.Instance.input_data import read_input_data_initial
 import json
 
 
@@ -145,42 +145,42 @@ class IntegratedGurobi:
         # Model.optimize()
         Model.update()
 
-        # # 设置初始解
-        # for o, p in op_list:
-        #     x_op[o, p].start = self.init_solution['x_op'][o][p]
-        #
-        # for i, t, b in itb_list:
-        #     x_itb_1[i, t, b].start = self.init_solution['x_itb_1'][i][t][b]
-        #
-        # for i, t in it_list:
-        #     x_it_2[i, t].start = self.init_solution['x_it_2'][i][t]
-        #
-        # for i, t, p in itp_list:
-        #     x_itp_2[i, t, p].start = self.init_solution['x_itp_2'][i][t][p]
-        #
-        # for i, t in it_list:
-        #     x_it_3[i, t].start = self.init_solution['x_it_3'][i][t]
-        #
-        # for i, t, b in itb_list:
-        #     x_itb_4[i, t, b].start = self.init_solution['x_itb_4'][i][t][b]
-        #
-        # for i, t in it_list:
-        #     y_it_2[i, t].start = self.init_solution['y_it_2'][i][t]
-        #
-        # for i, t, b in itb_list:
-        #     y_itb_2[i, t, b].start = self.init_solution['y_itb_2'][i][t][b]
-        #
-        # for i, t in it_list:
-        #     y_it_3[i, t].start = self.init_solution['y_it_3'][i][t]
-        #
-        # for i, t in it_list:
-        #     y_it_4[i, t].start = self.init_solution['y_it_4'][i][t]
-        #
-        # for o, i, t, p in oitp_list:
-        #     z_oit_p[o, i, t, p].start = self.init_solution['z_oit_p'][o][i][t][p]
-        #
-        # for o, t, p in otp_list:
-        #     z_ot_p[o, t, p].start = self.init_solution['z_ot_p'][o][t][p]
+        # 设置初始解
+        for o, p in op_list:
+            x_op[o, p].start = self.init_solution['x_op'][o][p]
+
+        for i, t, b in itb_list:
+            x_itb_1[i, t, b].start = self.init_solution['x_itb_1'][i][t][b]
+
+        for i, t in it_list:
+            x_it_2[i, t].start = self.init_solution['x_it_2'][i][t]
+
+        for i, t, p in itp_list:
+            x_itp_2[i, t, p].start = self.init_solution['x_itp_2'][i][t][p]
+
+        for i, t in it_list:
+            x_it_3[i, t].start = self.init_solution['x_it_3'][i][t]
+
+        for i, t, b in itb_list:
+            x_itb_4[i, t, b].start = self.init_solution['x_itb_4'][i][t][b]
+
+        for i, t in it_list:
+            y_it_2[i, t].start = self.init_solution['y_it_2'][i][t]
+
+        for i, t, b in itb_list:
+            y_itb_2[i, t, b].start = self.init_solution['y_itb_2'][i][t][b]
+
+        for i, t in it_list:
+            y_it_3[i, t].start = self.init_solution['y_it_3'][i][t]
+
+        for i, t in it_list:
+            y_it_4[i, t].start = self.init_solution['y_it_4'][i][t]
+
+        for o, i, t, p in oitp_list:
+            z_oit_p[o, i, t, p].start = self.init_solution['z_oit_p'][o][i][t][p]
+
+        for o, t, p in otp_list:
+            z_ot_p[o, t, p].start = self.init_solution['z_ot_p'][o][t][p]
 
 
         # result_info = {
