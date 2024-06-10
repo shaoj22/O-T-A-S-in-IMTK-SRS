@@ -114,6 +114,7 @@ class IntegratedGurobi:
         # 约束1：入库的顺序时刻为出库顺序时刻+访问的拣选站的数量
         Model.addConstrs(t2 - t1 - gp.quicksum(x_itp_2[i, t1, p] for p in range(self.P)) >= self.bigM * (x_it_3[i, t2] + x_it_2[i, t1] - 2) for i in range(self.I) for t1 in range(self.T) for t2 in range(t1, self.T))
         Model.addConstrs(t2 - t1 - gp.quicksum(x_itp_2[i, t1, p] for p in range(self.P)) <= self.bigM * (2 - x_it_3[i, t2] - x_it_2[i, t1]) for i in range(self.I) for t1 in range(self.T - self.P) for t2 in range(t1, t1 + self.P + 1))
+        Model.addConstrs(gp.quicksum(x_it_3[i, t] for t in range(t1, t1+self.P+1)) >= x_it_2[i, t1] for i in range(self.I) for t1 in range(self.T - self.P))
         # 约束2：料鲜在拣选站才能出库
         Model.addConstrs(x_it_3[i, t] <= y_it_3[i, t] for i in range(self.I) for t in range(self.T))
         # 入库后，料箱存储在暂存区，不在拣选站
