@@ -82,9 +82,9 @@ def order_devide():
                 if simlarity > sim:
                     sim = simlarity
                     order_choose = order
-            station_order_list.append(order)
-            station_matrix[station].append(order)
-            order_list.remove(order)
+            station_order_list.append(order_choose)
+            station_matrix[station].append(order_choose)
+            order_list.remove(order_choose)
             # station_matrix[station].append(order_list.pop(0))
 
     return None
@@ -158,7 +158,7 @@ def belong_block(sku):
 
 if __name__ == "__main__":
     start_time = time.time()  # 记录开始时间的时间戳
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-small-2.json"
     instance_obj = read_input_data(input_path)
     order_list = instance_obj.order_list
     un_order_list = order_list.copy()

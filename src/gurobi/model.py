@@ -87,7 +87,7 @@ class IntegratedGurobi:
         # 约束5：每个订单在拣选站上执行的时间必须连续
         Model.addConstrs(z_ot_p[o, t2, p] >= z_ot_p[o, t1, p] + z_ot_p[o, t3, p] + self.time_matrix[t2][t1] + self.time_matrix[t3][t2] - 3 for t1 in range(self.T) for t2 in range(self.T) for t3 in range(self.T) for o in range(self.O) for p in range(self.P))
         # 约束6：工作站平衡约束
-        Model.addConstrs(gp.quicksum(x_itp_2[i, t, p1] for i in range(self.I) for t in range(self.T)) - gp.quicksum(x_itp_2[i, t, p2] for i in range(self.I) for t in range(self.T)) <= self.sita for p1 in range(self.P) for p2 in range(self.P))
+        # Model.addConstrs(gp.quicksum(x_itp_2[i, t, p1] for i in range(self.I) for t in range(self.T)) - gp.quicksum(x_itp_2[i, t, p2] for i in range(self.I) for t in range(self.T)) <= self.sita for p1 in range(self.P) for p2 in range(self.P))
         # 下架决策有关约束
         # 约束1：每个时刻下，每个Block中只能下架一个料箱
         Model.addConstrs(gp.quicksum(x_itb_1[i, t, b] for i in range(self.I)) <= 1 for t in range(self.T) for b in range(self.B))
@@ -420,13 +420,13 @@ class IntegratedGurobi:
         return result_info
 
 if __name__ == "__main__":
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-medium-1.json"
     instance_obj = read_input_data(input_path)
     input_path2 = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/gurobi/Initial_gurobi.json"
     with open(input_path2, 'r') as f:
         json_file = json.load(f)
     # Initial_solution = read_input_data_initial("/src/gurobi/Initial_gurobi.json")
-    gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=3600, max_T=20)
+    gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=3600, max_T=35)
     # Model = gp.Model('IntegratedGurobiModel')
     # result_info = gurobi_alg.build_gurobi_model(Model=Model)
     result_info = gurobi_alg.run_gurobi_model()
