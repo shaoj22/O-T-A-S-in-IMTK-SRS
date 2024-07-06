@@ -1,15 +1,4 @@
-'''
-Author: shaoj22 935619774@qq.com
-Date: 2024-05-10 10:41:02
-LastEditors: shaoj22 935619774@qq.com
-LastEditTime: 2024-05-10 18:37:30
-FilePath: \Meituan-INFORMS-TSL-Research-Challenge\pdp_module\args.py
-Description: alns's args.
-'''
-
-
-from pdp_module.alns.operators import *
-
+from src.alns.tool.operators import *
 
 class ALNSArgs:
     def __init__(self, params_info):
@@ -28,15 +17,13 @@ class ALNSArgs:
         self.break_operators_list = params_info['break_operators_list']
         self.repair_operators_list = params_info['repair_operators_list']
 
-
-def get_common_alns_args(instance):
+def get_common_alns_args(instance_obj, operator_num):
     """ get common ALNS args"""
-    break_operators_list = [
-        RandomBreak(instance=instance, break_num=1),RandomBreak(instance=instance, break_num=2)
-        ]
-    repair_operators_list = [
-        RandomRepair(instance=instance)
-        ]
+    break_operators_list = []
+    repair_operators_list = []
+    for i in range(operator_num):
+        break_operators_list.append(RandomBreak(instance_obj=instance_obj, break_num=i+1))
+        repair_operators_list.append(RandomRepair(instance_obj=instance_obj))
     params_info = {
         "iter_num": 1000,
         "adaptive_period": 1000,

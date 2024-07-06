@@ -86,5 +86,5 @@ class RandomRepair(Operator):
                     repair = True
 
         # repair
-        self.safe_change(greedy_op_matrix, break_list, repair_list)
-        return greedy_op_matrix
+        op_matrix = self.safe_change(greedy_op_matrix, break_list, repair_list)
+        return op_matrix
