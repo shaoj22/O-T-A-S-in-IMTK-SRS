@@ -29,6 +29,7 @@ class Operator:
 
 
 class RandomBreak(Operator):
+    # 继承父类
     def __init__(self, instance, break_num=1):
         """" random break the solution """
         self.instance = instance
