@@ -16,9 +16,9 @@ class AdaptiveGreedyInitial:
         # 调用主函数，得到料箱出库顺序
         while len(g_initial.un_order_list) != 0:
             # 输出拣选站矩阵
-            for station in g_initial.station_list:
-                orders_in_station = g_initial.station_matrix[station]
-                print(f"拣选站 {station} 目前处理的订单：{orders_in_station}")
+            # for station in g_initial.station_list:
+            #     orders_in_station = g_initial.station_matrix[station]
+            #     print(f"拣选站 {station} 目前处理的订单：{orders_in_station}")
             g_initial.process_orders()
         # print(g_initial.x_op)
         # 得到x_otp
@@ -30,6 +30,7 @@ class AdaptiveGreedyInitial:
                 for o in range(self.num_orders):
                     if g_initial.z_ot_p[o][t][p] == 1 and o not in greedy_op_matrix[p]:
                         greedy_op_matrix[p].append(o)
+        print(greedy_op_matrix)
         return greedy_op_matrix
 
 # test code

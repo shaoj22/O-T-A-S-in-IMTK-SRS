@@ -493,8 +493,9 @@ class GREEDY:
         print(f"总次数：", total)
 
 if __name__ == "__main__":
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-small-2.json"
-    g_initial = GREEDY(input_path, T=90)
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-medium-1.json"
+    start = time.time()
+    g_initial = GREEDY(input_path, T=35)
     # 调用主函数，得到料箱出库顺序
     while len(g_initial.un_order_list) != 0:
         # 输出拣选站矩阵
@@ -504,6 +505,8 @@ if __name__ == "__main__":
         g_initial.process_orders()
     # print("出库顺序和入库顺序:", g_initial.final_sku_list)
     # 部分约束限制检查
+    end = time.time()
+    print("时长；", end - start)
     g_initial.check()
     # 存储决策变量
     g_initial.result_to_file()

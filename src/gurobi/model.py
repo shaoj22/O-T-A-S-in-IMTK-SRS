@@ -422,13 +422,10 @@ class IntegratedGurobi:
 if __name__ == "__main__":
     input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-medium-1.json"
     instance_obj = read_input_data(input_path)
-    input_path2 = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/gurobi/Initial_gurobi.json"
+    input_path2 = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/alns/Initial_gurobi.json"
     with open(input_path2, 'r') as f:
         json_file = json.load(f)
-    # Initial_solution = read_input_data_initial("/src/gurobi/Initial_gurobi.json")
-    gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=3600, max_T=35)
-    # Model = gp.Model('IntegratedGurobiModel')
-    # result_info = gurobi_alg.build_gurobi_model(Model=Model)
+    gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=7200, max_T=40)
     result_info = gurobi_alg.run_gurobi_model()
 
     print(result_info)

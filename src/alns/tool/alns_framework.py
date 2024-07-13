@@ -3,6 +3,7 @@ import tqdm
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 from src.alns.tool.adaptive_greedy_initial import AdaptiveGreedyInitial
 from src.alns.tool.evaluator import EVALUATOR
 
@@ -23,6 +24,7 @@ class ALNSFramework:
         self.input_path = input_path
         self.T = T
 
+
     def set_operators_list(self):
         """ set operators' list. """
         self.break_operators_list = []
@@ -31,13 +33,11 @@ class ALNSFramework:
 
     def init_solution(self):
         """ initialize the solution. """
-        greedyinitial = AdaptiveGreedyInitial(self.input_path,self.T)
-        return greedyinitial.run()
+        raise NotImplementedError
 
     def cal_objective(self, solution_op):
         """ calculate the objective value. """
-        eva = EVALUATOR(self.input_path, solution_op, self.T)
-        return eva.evaluate_solution()
+        raise NotImplementedError
 
     def reset(self):
         """ reset the alns framework. """
@@ -93,7 +93,7 @@ class ALNSFramework:
         """ run ALNS. """
         self.reset()
         cur_solution = self.init_solution()
-        cur_obj = self.cal_objective(cur_solution)
+        cur_obj = self.cal_objective(cur_solution, False)
         self.best_solution = cur_solution
         self.best_obj = cur_obj
         temperature = self.max_temp
@@ -101,7 +101,8 @@ class ALNSFramework:
         for step in pbar:
             break_opt_i, repair_opt_i = self.choose_operator()
             new_solution = self.get_neighborhood(cur_solution, break_opt_i, repair_opt_i)
-            new_obj = self.cal_objective(new_solution)
+            # print('1')
+            new_obj = self.cal_objective(new_solution, False)
             if new_obj < self.best_obj:
                 self.best_solution = new_solution
                 self.best_obj = new_obj
@@ -133,6 +134,7 @@ class ALNSFramework:
                 "cur_obj": cur_obj,
                 "temperature": temperature,
             })
-
+        obj = self.cal_objective(self.best_solution, True)
+        print(obj)
         return self.best_solution, self.best_obj
 

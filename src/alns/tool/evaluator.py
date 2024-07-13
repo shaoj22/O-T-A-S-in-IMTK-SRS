@@ -2,19 +2,26 @@ from src.Instance.input_data import read_input_data
 from collections import defaultdict
 from copy import deepcopy
 import json
+import numpy as np
+import copy
+import time
+import cProfile
+import pstats
 
 class EVALUATOR:
-    def __init__(self, input_path, solution_op, T):
+    def __init__(self, input_path, solution_op, T, flag):
         self.input_path = input_path
         self.T = T
         self.t = 0
         self.instance_obj = read_input_data(input_path)
-        self.solution_op = solution_op
+        self.solution_op = solution_op.copy()
         self.station_matrix = []
         self.ongoing_order_list = []
         self.init_global_variables()
         self.init_decision_variables()
         self.initial_ongoing_order_list()
+        self.flag = flag
+
 
 
     def init_global_variables(self):
@@ -41,91 +48,41 @@ class EVALUATOR:
 
     def init_decision_variables(self):
         # x_op
-        self.x_op = []
-        for o in range(self.num_orders):
-            self.x_op.append([])
-            for p in range(self.num_stations):
-                self.x_op[o].append(0)
+        self.x_op = np.zeros((self.num_orders, self.num_stations), dtype=int)
+
         # x_itb_1
-        self.x_itb_1 = []
-        for i in range(self.num_totes):
-            self.x_itb_1.append([])
-            for t in range(self.T):
-                self.x_itb_1[i].append([])
-                for b in range(self.num_blocks):
-                    self.x_itb_1[i][t].append(0)
+        self.x_itb_1 = np.zeros((self.num_totes, self.T, self.num_blocks), dtype=int)
+
         # x_it_2
-        self.x_it_2 = []
-        for i in range(self.num_totes):
-            self.x_it_2.append([])
-            for t in range(self.T):
-                self.x_it_2[i].append(0)
+        self.x_it_2 = np.zeros((self.num_totes, self.T), dtype=int)
+
         # x_itp_2
-        self.x_itp_2 = []
-        for i in range(self.num_totes):
-            self.x_itp_2.append([])
-            for t in range(self.T):
-                self.x_itp_2[i].append([])
-                for p in range(self.num_stations):
-                    self.x_itp_2[i][t].append(0)
+        self.x_itp_2 = np.zeros((self.num_totes, self.T, self.num_stations), dtype=int)
+
         # x_it_3
-        self.x_it_3 = []
-        for i in range(self.num_totes):
-            self.x_it_3.append([])
-            for t in range(self.T):
-                self.x_it_3[i].append(0)
+        self.x_it_3 = np.zeros((self.num_totes, self.T), dtype=int)
+
         # x_itb_4
-        self.x_itb_4 = []
-        for i in range(self.num_totes):
-            self.x_itb_4.append([])
-            for t in range(self.T):
-                self.x_itb_4[i].append([])
-                for b in range(self.num_blocks):
-                    self.x_itb_4[i][t].append(0)
+        self.x_itb_4 = np.zeros((self.num_totes, self.T, self.num_blocks), dtype=int)
+
         # y_it_2
-        self.y_it_2 = []
-        for i in range(self.num_totes):
-            self.y_it_2.append([])
-            for t in range(self.T):
-                self.y_it_2[i].append(0)
+        self.y_it_2 = np.zeros((self.num_totes, self.T), dtype=int)
+
         # y_itb_2
-        self.y_itb_2 = []
-        for i in range(self.num_totes):
-            self.y_itb_2.append([])
-            for t in range(self.T):
-                self.y_itb_2[i].append([])
-                for b in range(self.num_blocks):
-                    self.y_itb_2[i][t].append(0)
+        self.y_itb_2 = np.zeros((self.num_totes, self.T, self.num_blocks), dtype=int)
+
         # y_it_3
-        self.y_it_3 = []
-        for i in range(self.num_totes):
-            self.y_it_3.append([])
-            for t in range(self.T):
-                self.y_it_3[i].append(0)
+        self.y_it_3 = np.zeros((self.num_totes, self.T), dtype=int)
+
         # y_it_4
-        self.y_it_4 = []
-        for i in range(self.num_totes):
-            self.y_it_4.append([])
-            for t in range(self.T):
-                self.y_it_4[i].append(1)
+        self.y_it_4 = np.ones((self.num_totes, self.T), dtype=int)
+
         # z_oit_p
-        self.z_oit_p = []
-        for o in range(self.num_orders):
-            self.z_oit_p.append([])
-            for i in range(self.num_totes):
-                self.z_oit_p[o].append([])
-                for t in range(self.T):
-                    self.z_oit_p[o][i].append([])
-                    for p in range(self.num_stations):
-                        self.z_oit_p[o][i][t].append(0)
+        self.z_oit_p = np.zeros((self.num_orders, self.num_totes, self.T, self.num_stations), dtype=int)
+
         # z_ot_p
-        self.z_ot_p = []
-        for o in range(self.num_orders):
-            self.z_ot_p.append([])
-            for t in range(self.T):
-                self.z_ot_p[o].append([])
-                for p in range(self.num_stations):
-                    self.z_ot_p[o][t].append(0)
+        self.z_ot_p = np.zeros((self.num_orders, self.T, self.num_stations), dtype=int)
+
 
     # 在订单列表中删除指定订单
     def delete_order(self, order_list2):
@@ -238,8 +195,8 @@ class EVALUATOR:
                 for order in remove_orders:
                     self.station_matrix[i].remove(order)
                     self.ongoing_order_list.remove(order)
-                    print(order)
-                    print(self.un_order_list)
+                    # print(order)
+                    # print(self.un_order_list)
                     # for order_un in self.un_order_list:
                     #     if order['orderIdx'] == order_un['orderIdx']:
                     #         remove_orders_un.append(order_un)
@@ -293,7 +250,7 @@ class EVALUATOR:
         # 提取排序后的商品编号
         sorted_sku_list = [sku for sku, _ in sorted_skus]
         if len(sorted_sku_list) != 0:
-            print("1")
+            # print("1")
             # 料箱到达
             t_actual = self.sku_sevice(sorted_sku_list)
         if len(self.order_list) != 0:
@@ -366,6 +323,20 @@ class EVALUATOR:
 
     def result_to_file(self):
         # 存储结果
+        # 将 NumPy 数组转换回 Python 列表
+        self.x_op = self.x_op.tolist()
+        self.x_itb_1 = self.x_itb_1.tolist()
+        self.x_it_2 = self.x_it_2.tolist()
+        self.x_itp_2 = self.x_itp_2.tolist()
+        self.x_it_3 = self.x_it_3.tolist()
+        self.x_itb_4 = self.x_itb_4.tolist()
+        self.y_it_2 = self.y_it_2.tolist()
+        self.y_itb_2 = self.y_itb_2.tolist()
+        self.y_it_3 = self.y_it_3.tolist()
+        self.y_it_4 = self.y_it_4.tolist()
+        self.z_oit_p = self.z_oit_p.tolist()
+        self.z_ot_p = self.z_ot_p.tolist()
+
         result_info = {
             'x_op': self.x_op,
             'x_itb_1': self.x_itb_1,
@@ -386,54 +357,100 @@ class EVALUATOR:
         with open('/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/alns/Initial_gurobi.json', 'w') as json_file:
             json_file.write(json_data)
 
+    # def variables_to_sequence(self):
+    #     # 订单指派情况
+    #     greedy_op_matrix = []
+    #     for p in range(self.num_stations):
+    #         greedy_op_matrix.append([])
+    #     for o in range(self.num_orders):
+    #         for p in range(self.num_stations):
+    #             if self.x_op[o][p] == 1:
+    #                 greedy_op_matrix[p].append(o)
+    #     # for p in range(self.num_stations):
+    #     #     print(f"拣选站{p}：{greedy_op_matrix[p]}")
+    #     # 下架顺序
+    #     down = [[] for block in self.block_list]
+    #     # 上架顺序
+    #     up = [[] for block in self.block_list]
+    #     for block in self.block_list:
+    #         for t in range(self.T):
+    #             for sku in self.tote_list:
+    #                 if self.x_itb_1[sku][t][block['blockIdx']] == 1:
+    #                     down[block['blockIdx']].append(sku)
+    #                 if self.x_itb_4[sku][t][block['blockIdx']] == 1:
+    #                     up[block['blockIdx']].append(sku)
+    #     # 出库顺序
+    #     out_storage = []
+    #     # 入库顺序
+    #     in_storage = []
+    #     for t in range(self.T):
+    #         for sku in self.tote_list:
+    #             if self.x_it_2[sku][t] == 1:
+    #                 out_storage.append(sku)
+    #             if self.x_it_3[sku][t] == 1:
+    #                 in_storage.append(sku)
+    #     # print(f"下架顺序：", down)
+    #     # print(f"出库顺序：", out_storage)
+    #     # print(f"入库顺序：", in_storage)
+    #     # print(f"上架顺序：", up)
+    #     # 计算次数
+    #     len_down = 0
+    #     up_down = 0
+    #     for block in self.block_list:
+    #         len_down = len_down + len(down[block['blockIdx']])
+    #         up_down = up_down + len(up[block['blockIdx']])
+    #     total = len_down + up_down + len(out_storage) + len(in_storage)
+    #     # print(f"总次数：", total)
+    #     return total
+
     def variables_to_sequence(self):
         # 订单指派情况
-        greedy_op_matrix = []
+        greedy_op_matrix = [[] for _ in range(self.num_stations)]
         for p in range(self.num_stations):
-            greedy_op_matrix.append([])
-        for o in range(self.num_orders):
-            for p in range(self.num_stations):
-                if self.x_op[o][p] == 1:
-                    greedy_op_matrix[p].append(o)
-        # for p in range(self.num_stations):
-        #     print(f"拣选站{p}：{greedy_op_matrix[p]}")
-        # 下架顺序
-        down = [[] for block in self.block_list]
-        # 上架顺序
-        up = [[] for block in self.block_list]
+            greedy_op_matrix[p] = np.where(self.x_op[:, p] == 1)[0]
+
+        # 下架顺序和上架顺序
+        num_blocks = len(self.block_list)
+        down = [[] for _ in range(num_blocks)]
+        up = [[] for _ in range(num_blocks)]
+
         for block in self.block_list:
+            blockIdx = block['blockIdx']
             for t in range(self.T):
-                for sku in self.tote_list:
-                    if self.x_itb_1[sku][t][block['blockIdx']] == 1:
-                        down[block['blockIdx']].append(sku)
-                    if self.x_itb_4[sku][t][block['blockIdx']] == 1:
-                        up[block['blockIdx']].append(sku)
-        # 出库顺序
-        out_storage = []
-        # 入库顺序
-        in_storage = []
-        for t in range(self.T):
-            for sku in self.tote_list:
-                if self.x_it_2[sku][t] == 1:
-                    out_storage.append(sku)
-                if self.x_it_3[sku][t] == 1:
-                    in_storage.append(sku)
-        # print(f"下架顺序：", down)
-        # print(f"出库顺序：", out_storage)
-        # print(f"入库顺序：", in_storage)
-        # print(f"上架顺序：", up)
+                down[blockIdx].extend(np.where(self.x_itb_1[:, t, blockIdx] == 1)[0])
+                up[blockIdx].extend(np.where(self.x_itb_4[:, t, blockIdx] == 1)[0])
+
+        # 出库顺序和入库顺序
+        out_storage = np.concatenate([np.where(self.x_it_2[:, t] == 1)[0] for t in range(self.T)])
+        in_storage = np.concatenate([np.where(self.x_it_3[:, t] == 1)[0] for t in range(self.T)])
+
         # 计算次数
-        len_down = 0
-        up_down = 0
-        for block in self.block_list:
-            len_down = len_down + len(down[block['blockIdx']])
-            up_down = up_down + len(up[block['blockIdx']])
+        len_down = sum(len(down[block['blockIdx']]) for block in self.block_list)
+        up_down = sum(len(up[block['blockIdx']]) for block in self.block_list)
         total = len_down + up_down + len(out_storage) + len(in_storage)
-        # print(f"总次数：", total)
+
         return total
 
     def evaluate_solution(self):
         while len(self.un_order_list) != 0:
             self.process_orders()
         tt = self.variables_to_sequence()
+        if self.flag:
+            self.check()
+            self.result_to_file()
         return tt
+
+# profiler = cProfile.Profile()
+# profiler.enable()
+# input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-large-1.json"
+# T = 90
+# solution_op = [[0, 2, 5, 22, 4, 26], [11, 13, 14, 18, 23, 19, 25], [3, 12, 15, 21, 27], [7, 17, 28, 29, 8, 24, 9], [1, 6, 16, 20, 10]]
+# flag = False
+# eva = EVALUATOR(input_path, solution_op, T, flag)
+# print(eva.evaluate_solution())
+# profiler.disable()
+# # 将剖析结果保存到文件
+# # profiler.dump_stats('profile_output.prof')
+# profiler = pstats.Stats('profile_output.prof')
+# profiler.sort_stats('cumtime').print_stats()
+

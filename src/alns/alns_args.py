@@ -17,15 +17,12 @@ class ALNSArgs:
         self.break_operators_list = params_info['break_operators_list']
         self.repair_operators_list = params_info['repair_operators_list']
 
-def get_common_alns_args(instance_obj, operator_num):
+def get_common_alns_args(instance_obj):
     """ get common ALNS args"""
-    break_operators_list = []
-    repair_operators_list = []
-    for i in range(operator_num):
-        break_operators_list.append(RandomBreak(instance_obj=instance_obj, break_num=i+1))
-        repair_operators_list.append(RandomRepair(instance_obj=instance_obj))
+    break_operators_list = [RandomBreak(instance_obj=instance_obj, break_num=1), WorstBreak(instance_obj=instance_obj, break_num=1), ShawBreak(instance_obj=instance_obj, break_num=2)]
+    repair_operators_list = [RegretRepair(instance_obj=instance_obj), RandomRepairSame(instance_obj=instance_obj), RandomRepairDif(instance_obj=instance_obj), GreedyRepair(instance_obj=instance_obj)]
     params_info = {
-        "iter_num": 1000,
+        "iter_num": 10000,
         "adaptive_period": 1000,
         "sigma1": 2,
         "sigma2": 1,
