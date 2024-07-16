@@ -9,11 +9,12 @@ import cProfile
 import pstats
 
 class EVALUATOR:
-    def __init__(self, input_path, solution_op, T, flag):
+    def __init__(self, input_path, solution_op, flag):
         self.input_path = input_path
-        self.T = T
+        # self.T = T
         self.t = 0
         self.instance_obj = read_input_data(input_path)
+        self.T = self.instance_obj.max_T
         self.solution_op = solution_op.copy()
         self.station_matrix = []
         self.ongoing_order_list = []

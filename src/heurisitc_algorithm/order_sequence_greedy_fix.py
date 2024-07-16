@@ -479,10 +479,10 @@ class GREEDY:
                     out_storage.append(sku)
                 if self.x_it_3[sku][t] == 1:
                     in_storage.append(sku)
-        print(f"下架顺序：", down)
-        print(f"出库顺序：", out_storage)
-        print(f"入库顺序：", in_storage)
-        print(f"上架顺序：", up)
+        # print(f"下架顺序：", down)
+        # print(f"出库顺序：", out_storage)
+        # print(f"入库顺序：", in_storage)
+        # print(f"上架顺序：", up)
         # 计算次数
         len_down = 0
         up_down = 0
@@ -490,12 +490,13 @@ class GREEDY:
             len_down = len_down + len(down[block['blockIdx']])
             up_down = up_down + len(up[block['blockIdx']])
         total = len_down + up_down + len(out_storage) + len(in_storage)
-        print(f"总次数：", total)
+        # print(f"总次数：", total)
+        return total
 
 if __name__ == "__main__":
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-medium-1.json"
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
     start = time.time()
-    g_initial = GREEDY(input_path, T=35)
+    g_initial = GREEDY(input_path, T=50)
     # 调用主函数，得到料箱出库顺序
     while len(g_initial.un_order_list) != 0:
         # 输出拣选站矩阵

@@ -8,7 +8,7 @@ from src.alns.tool.adaptive_greedy_initial import AdaptiveGreedyInitial
 from src.alns.tool.evaluator import EVALUATOR
 
 class ALNSFramework:
-    def __init__(self, alns_args, input_path, T):
+    def __init__(self, alns_args, input_path):
         """ ALNS's generic framework. """
         self.iter_num = alns_args.iter_num
         self.adaptive_period = alns_args.adaptive_period
@@ -22,7 +22,7 @@ class ALNSFramework:
         self.break_operators_list = alns_args.break_operators_list
         self.repair_operators_list = alns_args.repair_operators_list
         self.input_path = input_path
-        self.T = T
+        # self.T = T
 
 
     def set_operators_list(self):

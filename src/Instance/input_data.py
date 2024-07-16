@@ -14,7 +14,8 @@ def read_input_data(input_path):
     block_list = json_file['block_list']
     station_buffer_num = json_file['station_buffer_num']
     block_storage_num = json_file['block_storage_num']
-    return Instance(order_list, tote_list, station_list, block_list, station_buffer_num, block_storage_num)
+    max_T = json_file['max_T']
+    return Instance(order_list, tote_list, station_list, block_list, station_buffer_num, block_storage_num, max_T)
 
 def read_input_data_initial(input_path):
     with open(input_path, 'r') as f:
@@ -42,3 +43,4 @@ if __name__ == "__main__":
     print('block_list:', instance_obj.block_list)
     print('station_buffer_num:', instance_obj.station_buffer_num)
     print('block_storage_num:', instance_obj.block_storage_num)
+    print('max_T:', instance_obj.max_T)

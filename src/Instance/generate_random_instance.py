@@ -7,10 +7,11 @@ from src.entity.Order import Order
 from src.entity.Tote import Tote
 from src.entity.Station import Station
 from src.entity.Block import Block
+import pandas as pd
 
 
 class genRandomInstance:
-    def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=0, block_storage_num=0, instance_name='myRandomInstance') -> None:
+    def __init__(self, order_nums=0, tote_nums=0, station_nums=0, block_nums=0, station_buffer_num=0, block_storage_num=0, instance_name='myRandomInstance', max_T=0) -> None:
         """ init the instance
         Args:
             order_nums (int): the number of the orders.
@@ -31,13 +32,14 @@ class genRandomInstance:
         self.tote_list = []
         self.station_list = []
         self.block_list = []
+        self.max_T = max_T
         self.json_dict = self.gen_json()
 
     def gen_orders(self):
         """ gen the orders list """
         for order in range(self.order_nums):
             # gen the sku of the order
-            sku_nums = random.randint(2, 4)  # sku nums
+            sku_nums = random.randint(3, 6)  # sku nums
             sku_list = []  # sku list
             for sku in range(sku_nums):
                 accept = False
@@ -70,7 +72,7 @@ class genRandomInstance:
             delete = False
             while not delete:
                 block = random.randint(0, block_nums - 1)
-                if len(sku_list[block]) < 2:
+                if len(sku_list[block]) < 5:
                     sku_list[block].append(i)
                     delete = True
         for block in range(self.block_nums):
@@ -110,22 +112,30 @@ class genRandomInstance:
         json_dict['block_list'] = block_idx_list
         json_dict['station_buffer_num'] = self.station_buffer_num
         json_dict['block_storage_num'] = self.block_storage_num
-        json_file_path = self.instance_name + '.json'
+        json_dict['max_T'] = self.max_T
+        json_file_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/experiment/small_scale_experiment/" + self.instance_name + '.json'
         with open(json_file_path, 'w') as f:
             json.dump(json_dict, f, indent=4)
         return json_dict
 
 
 if "__main__" == __name__:
-    order_nums = 4
-    tote_nums = 6
-    station_nums = 2
-    block_nums = 3
-    station_buffer_num = 1
-    block_storage_num = 2
-    random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums, station_buffer_num=station_buffer_num, block_storage_num=block_storage_num,
-                                        instance_name='myRandomInstanceGurobi')
-    print("order_list:", random_instance.json_dict['order_list'])
-    print("tote_list:", random_instance.json_dict['tote_list'])
-    print("station_list:", random_instance.json_dict['station_list'])
-    print("block_list:", random_instance.json_dict['block_list'])
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/experiment/small_scale_experiment/small_scale_parameters.xlsx"
+    df = pd.read_excel(input_path)
+    for index, row in df.iterrows():
+        if index != 0:
+            order_nums = int(row['order_nums'])
+            tote_nums = int(row['tote_nums'])
+            station_nums = int(row['station_num'])
+            block_nums = int(row['block_num'])
+            station_buffer_num = int(row['station_buffer_num'])
+            block_storage_num = int(row['block_storage_num'])
+            max_T = int(row['max_T'])
+            random_instance = genRandomInstance(order_nums=order_nums, tote_nums=tote_nums, station_nums=station_nums, block_nums=block_nums, station_buffer_num=station_buffer_num, block_storage_num=block_storage_num,
+                                                instance_name='myRandomInstanceGurobi' + str(index), max_T=max_T)
+            print("order_list:", random_instance.json_dict['order_list'])
+            print("tote_list:", random_instance.json_dict['tote_list'])
+            print("station_list:", random_instance.json_dict['station_list'])
+            print("block_list:", random_instance.json_dict['block_list'])
+        else:
+            continue

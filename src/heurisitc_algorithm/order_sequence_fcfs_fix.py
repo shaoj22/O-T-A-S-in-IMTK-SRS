@@ -354,10 +354,10 @@ class FCFS:
                     out_storage.append(sku)
                 if self.x_it_3[sku][t] == 1:
                     in_storage.append(sku)
-        print(f"下架顺序：", down)
-        print(f"出库顺序：", out_storage)
-        print(f"入库顺序：", in_storage)
-        print(f"上架顺序：", up)
+        # print(f"下架顺序：", down)
+        # print(f"出库顺序：", out_storage)
+        # print(f"入库顺序：", in_storage)
+        # print(f"上架顺序：", up)
         # 计算次数
         len_down = 0
         up_down = 0
@@ -365,12 +365,13 @@ class FCFS:
             len_down = len_down + len(down[block['blockIdx']])
             up_down = up_down + len(up[block['blockIdx']])
         total = len_down + up_down + len(out_storage) + len(in_storage)
-        print(f"总次数：", total)
+        # print(f"总次数：", total)
+        return total
 
 
 if "__main__" == __name__:
-    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/Instance-medium-1.json"
-    f_initial = FCFS(input_path, T=35)
+    input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/src/Instance/myRandomInstanceGurobi.json"
+    f_initial = FCFS(input_path, T=55)
     # 分配订单到拣选站
     f_initial.order_devide(t=0)
     # 调用主函数，得到料箱出库顺序

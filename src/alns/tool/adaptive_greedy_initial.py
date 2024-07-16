@@ -4,12 +4,13 @@ from src.alns.tool.evaluator import EVALUATOR
 
 
 class AdaptiveGreedyInitial:
-    def __init__(self, input_path, T):
+    def __init__(self, input_path):
         self.input_path = input_path
         self.instance_obj = read_input_data(input_path)
         self.num_stations = self.instance_obj.station_num
         self.num_orders = self.instance_obj.order_num
-        self.T = T
+        self.T = self.instance_obj.max_T
+        # self.T = T
 
     def run(self):
         g_initial = GREEDY(self.input_path, self.T)
