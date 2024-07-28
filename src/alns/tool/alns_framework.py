@@ -135,6 +135,6 @@ class ALNSFramework:
                 "temperature": temperature,
             })
         obj = self.cal_objective(self.best_solution, True)
-        print(obj)
+        print(self.best_solution, obj)
         return self.best_solution, self.best_obj
 

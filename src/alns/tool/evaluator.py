@@ -22,8 +22,14 @@ class EVALUATOR:
         self.init_decision_variables()
         self.initial_ongoing_order_list()
         self.flag = flag
+        self.to_matrix_poo = self.gen_matrix_poo(solution_op)
 
-
+    def gen_matrix_poo(self, solution_op):
+        poo = np.zeros((self.num_stations, self.num_orders, self.num_orders) ,dtype=int)
+        for p, station in enumerate(solution_op):
+            for i in range(len(station) - 1):
+                poo[p][station[i]][station[i+1]] = 1
+        return poo
 
     def init_global_variables(self):
         self.order_list = self.instance_obj.order_list
@@ -337,6 +343,7 @@ class EVALUATOR:
         self.y_it_4 = self.y_it_4.tolist()
         self.z_oit_p = self.z_oit_p.tolist()
         self.z_ot_p = self.z_ot_p.tolist()
+        self.to_matrix_poo = self.to_matrix_poo.tolist()
 
         result_info = {
             'x_op': self.x_op,
@@ -351,6 +358,7 @@ class EVALUATOR:
             'y_it_4': self.y_it_4,
             'z_oit_p': self.z_oit_p,
             'z_ot_p': self.z_ot_p,
+            'poo': self.to_matrix_poo,
         }
 
         json_data = json.dumps(result_info, indent=4)

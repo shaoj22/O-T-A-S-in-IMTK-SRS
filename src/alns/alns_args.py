@@ -22,7 +22,7 @@ def get_common_alns_args(instance_obj):
     break_operators_list = [RandomBreak(instance_obj=instance_obj, break_num=1), WorstBreak(instance_obj=instance_obj, break_num=1), ShawBreak(instance_obj=instance_obj, break_num=2)]
     repair_operators_list = [RegretRepair(instance_obj=instance_obj), RandomRepairSame(instance_obj=instance_obj), RandomRepairDif(instance_obj=instance_obj), GreedyRepair(instance_obj=instance_obj)]
     params_info = {
-        "iter_num": 10000,
+        "iter_num": 1000,
         "adaptive_period": 1000,
         "sigma1": 2,
         "sigma2": 1,

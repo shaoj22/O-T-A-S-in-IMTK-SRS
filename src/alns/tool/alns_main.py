@@ -37,4 +37,13 @@ if __name__ == '__main__':
         best_solution, best_obj = alns_algorithm.run()
         end = time.time()
         print("时长；", end - start)
-
+    # start = time.time()
+    # input_path = "/Users/xiekio/Desktop/研一/组会/毕设/My/O-T-A-S-in-IMTK-SRS/experiment/small_scale_experiment/"+"myRandomInstanceGurobi"+str(0)+".json"
+    # # T = 55
+    # instance_obj = read_input_data(input_path=input_path)
+    # alns_args = get_common_alns_args(instance_obj=instance_obj)
+    #
+    # alns_algorithm = ALNS(alns_args=alns_args, input_path=input_path)
+    # best_solution, best_obj = alns_algorithm.run()
+    # end = time.time()
+    # print("时长；", end - start)

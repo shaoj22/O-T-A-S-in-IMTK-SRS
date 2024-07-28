@@ -26,6 +26,7 @@ class IntegratedGurobi:
         self.sita = sita
         self.bigM = 100 # big M
         self.time_matrix = self.gen_time_matrix()
+        self.to_matrix_op = self.init_solution['x_op']
 
     def gen_time_matrix(self):
         """ generate the time matrix """
@@ -48,7 +49,6 @@ class IntegratedGurobi:
         """ set the obj and the constraint for the gurobi model """
         # set the variable
         op_list = [(o, p) for o in range(self.O) for p in range(self.P)]
-        x_op = Model.addVars(op_list, vtype=GRB.BINARY, name="x_op")
         itb_list = [(i, t, b) for i in range(self.I) for t in range(self.T) for b in range(self.B)]
         x_itb_1 = Model.addVars(itb_list, vtype=GRB.BINARY, name="x_itb_1")
         it_list = [(i, t) for i in range(self.I) for t in range(self.T)]
@@ -82,8 +82,8 @@ class IntegratedGurobi:
         Model.addConstrs(z_oit_p[o, i, t, p] <= x_itp_2[i, t, p] for o in range(self.O) for i in range(self.I) for t in range(self.T) for p in range(self.P))
         Model.addConstrs(gp.quicksum(z_oit_p[o, i, t, p] for i in range(self.I)) <= z_ot_p[o, t, p] for o in range(self.O) for t in range(self.T) for p in range(self.P))
         # 约束4：每个订单只能在一个拣选站完成
-        Model.addConstrs(gp.quicksum(x_op[o, p] for p in range(self.P)) == 1 for o in range(self.O))
-        Model.addConstrs(x_op[o, p] >= z_ot_p[o, t, p] for o in range(self.O) for t in range(self.T) for p in range(self.P))
+        # Model.addConstrs(gp.quicksum(x_op[o, p] for p in range(self.P)) == 1 for o in range(self.O))
+        Model.addConstrs(self.to_matrix_op[o][p] >= z_ot_p[o, t, p] for o in range(self.O) for t in range(self.T) for p in range(self.P))
         # 约束5：每个订单在拣选站上执行的时间必须连续
         Model.addConstrs(z_ot_p[o, t2, p] >= z_ot_p[o, t1, p] + z_ot_p[o, t3, p] + self.time_matrix[t2][t1] + self.time_matrix[t3][t2] - 3 for t1 in range(self.T) for t2 in range(self.T) for t3 in range(self.T) for o in range(self.O) for p in range(self.P))
         # 约束6：工作站平衡约束
@@ -147,8 +147,6 @@ class IntegratedGurobi:
         Model.update()
 
         # 设置初始解
-        for o, p in op_list:
-            x_op[o, p].start = self.init_solution['x_op'][o][p]
 
         for i, t, b in itb_list:
             x_itb_1[i, t, b].start = self.init_solution['x_itb_1'][i][t][b]
@@ -217,20 +215,6 @@ class IntegratedGurobi:
         result_info = {}
         # get x
 
-        # x_op
-        info_x_op = []
-        info_xop = []
-        for o in range(self.O):
-            x_o = []
-            for p in range(self.P):
-                var_name_x = f"x_op[{o},{p}]"
-                x_o_p = Model.getVarByName(var_name_x).X
-                if x_o_p > 0:
-                    info_xop.append([o, p])
-                x_o.append(x_o_p)
-            info_x_op.append(x_o)
-        result_info['info_x_op'] = info_x_op
-        # result_info['info_xop'] = info_xop
         # x_itb_1
         info_x_itb_1 = []
         info_xitb1= []

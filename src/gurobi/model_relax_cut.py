@@ -26,6 +26,8 @@ class IntegratedGurobi:
         self.sita = sita
         self.bigM = 100 # big M
         self.time_matrix = self.gen_time_matrix()
+        self.to_matrix_op = self.init_solution['x_op']
+        self.to_matrix_poo = self.init_solution['poo']
 
     def gen_time_matrix(self):
         """ generate the time matrix """
@@ -48,7 +50,7 @@ class IntegratedGurobi:
         """ set the obj and the constraint for the gurobi model """
         # set the variable
         op_list = [(o, p) for o in range(self.O) for p in range(self.P)]
-        x_op = Model.addVars(op_list, vtype=GRB.BINARY, name="x_op")
+        t_op = Model.addVars(op_list, vtype=GRB.INTEGER, name="t_op")
         itb_list = [(i, t, b) for i in range(self.I) for t in range(self.T) for b in range(self.B)]
         x_itb_1 = Model.addVars(itb_list, vtype=GRB.BINARY, name="x_itb_1")
         it_list = [(i, t) for i in range(self.I) for t in range(self.T)]
@@ -65,6 +67,9 @@ class IntegratedGurobi:
         z_oit_p = Model.addVars(oitp_list, vtype=GRB.BINARY, name="z_oit_p")
         otp_list = [(o, t, p) for o in range(self.O) for t in range(self.T) for p in range(self.P)]
         z_ot_p = Model.addVars(otp_list, vtype=GRB.BINARY, name="z_ot_p")
+        # 定义辅助变量 delta 和 u_otp
+        delta = Model.addVars(otp_list, vtype=GRB.INTEGER, name="abs_diff")
+        u_otp = Model.addVars(otp_list, vtype=GRB.BINARY, name="u_otp")
         # set the obj
         Model.modelSense = GRB.MINIMIZE
         sum1 = gp.quicksum(x_itb_1[i, t, b] for i in range(self.I) for t in range(self.T) for b in range(self.B))
@@ -73,6 +78,17 @@ class IntegratedGurobi:
         sum4 = gp.quicksum(x_it_3[i, t] for i in range(self.I) for t in range(self.T))
         Model.setObjective(sum1 + sum2 + sum3 + sum4)
         # set the constraints
+        # 订单执行顺序有关约束
+        # 约束1：令t_{op}为订单o在拣选站p上的初始执行slot：
+        Model.addConstrs(t_op[o, p] <= t * z_ot_p[o, t, p] + self.bigM * (1 - z_ot_p[o, t, p]) for o in range(self.O) for t in range(self.T) for p in range(self.P))
+        Model.addConstrs(delta[o, t, p] >= t_op[o, p] - t for o in range(self.O) for t in range(self.T) for p in range(self.P))
+        Model.addConstrs(delta[o, t, p] >= t - t_op[o, p] for o in range(self.O) for t in range(self.T) for p in range(self.P))
+        Model.addConstrs(delta[o, t, p] <= t - t_op[o, p] + (1 - u_otp[o, t, p]) * self.bigM for o in range(self.O) for t in range(self.T) for p in range(self.P))
+        Model.addConstrs(delta[o, t, p] <= t_op[o, p] - t + u_otp[o, t, p] * self.bigM for o in range(self.O) for t in range(self.T) for p in range(self.P))
+        Model.addConstrs(z_ot_p[o, t, p] >= 1 - self.bigM * delta[o, t, p] for o in range(self.O) for t in range(self.T) for p in range(self.P))
+        # 约束2：最早执行时间
+        Model.addConstrs(t_op[o1, p] - t_op[o2, p] <= self.bigM * (1 - self.to_matrix_poo[p][o1][o2]) for o1 in range(self.O) for o2 in range(self.O) for p in range(self.P))
+        # 订单履行
         # 约束1：每个订单的料箱都需要完成
         Model.addConstrs(gp.quicksum(z_oit_p[o, i, t, p] for p in range(self.P) for t in range(self.T)) >= self.to_matrix_oi[o][i] for o in range(self.O) for i in range(self.I))
         # 约束2：每个工作站每个时刻同时执行的订单数量上限
@@ -82,8 +98,8 @@ class IntegratedGurobi:
         Model.addConstrs(z_oit_p[o, i, t, p] <= x_itp_2[i, t, p] for o in range(self.O) for i in range(self.I) for t in range(self.T) for p in range(self.P))
         Model.addConstrs(gp.quicksum(z_oit_p[o, i, t, p] for i in range(self.I)) <= z_ot_p[o, t, p] for o in range(self.O) for t in range(self.T) for p in range(self.P))
         # 约束4：每个订单只能在一个拣选站完成
-        Model.addConstrs(gp.quicksum(x_op[o, p] for p in range(self.P)) == 1 for o in range(self.O))
-        Model.addConstrs(x_op[o, p] >= z_ot_p[o, t, p] for o in range(self.O) for t in range(self.T) for p in range(self.P))
+        # Model.addConstrs(gp.quicksum(x_op[o, p] for p in range(self.P)) == 1 for o in range(self.O))
+        Model.addConstrs(self.to_matrix_op[o][p] >= z_ot_p[o, t, p] for o in range(self.O) for t in range(self.T) for p in range(self.P))
         # 约束5：每个订单在拣选站上执行的时间必须连续
         Model.addConstrs(z_ot_p[o, t2, p] >= z_ot_p[o, t1, p] + z_ot_p[o, t3, p] + self.time_matrix[t2][t1] + self.time_matrix[t3][t2] - 3 for t1 in range(self.T) for t2 in range(self.T) for t3 in range(self.T) for o in range(self.O) for p in range(self.P))
         # 约束6：工作站平衡约束
@@ -147,9 +163,9 @@ class IntegratedGurobi:
         Model.update()
 
         # 设置初始解
-        for o, p in op_list:
-            x_op[o, p].start = self.init_solution['x_op'][o][p]
-
+        #
+        # for o, p in op_list:
+        #     t_op[o, p].start = -1
         for i, t, b in itb_list:
             x_itb_1[i, t, b].start = self.init_solution['x_itb_1'][i][t][b]
 
@@ -184,20 +200,6 @@ class IntegratedGurobi:
             z_ot_p[o, t, p].start = self.init_solution['z_ot_p'][o][t][p]
 
 
-        # result_info = {
-        #     'x_op': x_op,
-        #     'x_itb_1': x_itb_1,
-        #     'x_it_2': x_it_2,
-        #     'x_itp_2': x_itp_2,
-        #     'x_it_3': x_it_3,
-        #     'x_itb_4': x_itb_4,
-        #     'y_it_2': y_it_2,
-        #     'y_itb_2': y_itb_2,
-        #     'y_it_3': y_it_3,
-        #     'y_it_4': y_it_4,
-        #     'z_oit_p': z_oit_p,
-        #     'z_ot_p': z_ot_p,
-        # }
         result_info = {
             'x_it_3': x_it_3,
         }
@@ -217,20 +219,6 @@ class IntegratedGurobi:
         result_info = {}
         # get x
 
-        # x_op
-        info_x_op = []
-        info_xop = []
-        for o in range(self.O):
-            x_o = []
-            for p in range(self.P):
-                var_name_x = f"x_op[{o},{p}]"
-                x_o_p = Model.getVarByName(var_name_x).X
-                if x_o_p > 0:
-                    info_xop.append([o, p])
-                x_o.append(x_o_p)
-            info_x_op.append(x_o)
-        result_info['info_x_op'] = info_x_op
-        # result_info['info_xop'] = info_xop
         # x_itb_1
         info_x_itb_1 = []
         info_xitb1= []
@@ -405,6 +393,19 @@ class IntegratedGurobi:
                 z_o.append(z_o_t)
             info_z_ot_p.append(z_o)
         result_info['info_z_ot_p'] = info_z_ot_p
+        # t_op
+        info_t_op = []
+        info_top = []
+        for o in range(self.O):
+            t_o = []
+            for p in range(self.P):
+                var_name_x = f"t_op[{o},{p}]"
+                t_o_p = Model.getVarByName(var_name_x).X
+                if t_o_p > 0:
+                    info_top.append([o, p])
+                t_o.append(t_o_p)
+            info_t_op.append(t_o)
+        result_info['info_t_op'] = info_t_op
         # result_info['info_zotp'] = info_zotp
 
 
@@ -427,5 +428,4 @@ if __name__ == "__main__":
         json_file = json.load(f)
     gurobi_alg = IntegratedGurobi(instance=instance_obj, init_solution=json_file, time_limit=7200)
     result_info = gurobi_alg.run_gurobi_model()
-
     print(result_info)
